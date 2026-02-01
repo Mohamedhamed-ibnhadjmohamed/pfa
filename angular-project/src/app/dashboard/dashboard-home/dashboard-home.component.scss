@@ -1,0 +1,129 @@
+.dashboard-home {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.page-header h1 {
+  color: var(--text-primary);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px var(--shadow-light);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px var(--shadow-medium);
+}
+
+.stat-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+  font-size: 1.5rem;
+  color: white;
+}
+
+.stat-content h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.stat-content p {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.action-card, .info-card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px var(--shadow-light);
+  border: 1px solid var(--border-color);
+  height: 100%;
+}
+
+.action-card h4, .info-card h4 {
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.action-buttons .btn {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.info-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.info-list li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.info-list li:last-child {
+  border-bottom: none;
+}
+
+.info-list strong {
+  color: var(--text-primary);
+}
+
+.progress {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bg-secondary);
+}
+
+.progress-bar {
+  border-radius: 3px;
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .stat-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .stat-icon {
+    margin-right: 0;
+    margin-bottom: 1rem;
+  }
+  
+  .action-buttons {
+    justify-content: center;
+  }
+}

@@ -1,0 +1,137 @@
+<app-navbar></app-navbar>
+<div class="register-container">
+  <app-theme-toggle></app-theme-toggle>
+  <div class="row justify-content-center w-100">
+    <div class="col-md-6 col-lg-5">
+      <div class="card register-card">
+        <div class="card-header">
+          <h3>Inscription</h3>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+            <div class="mb-3">
+              <label for="name" class="form-label">
+                <i class="fas fa-user me-2"></i>Nom complet
+              </label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="name" 
+                formControlName="name"
+                [ngClass]="{ 'is-invalid': submitted && f['name'].errors }"
+                placeholder="Entrez votre nom complet">
+              <div *ngIf="submitted && f['name'].errors" class="invalid-feedback">
+                <div *ngIf="f['name'].errors['required']">
+                  <i class="fas fa-exclamation-circle me-1"></i>Le nom est requis
+                </div>
+                <div *ngIf="f['name'].errors['minlength']">
+                  <i class="fas fa-exclamation-circle me-1"></i>Le nom doit contenir au moins 2 caractères
+                </div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="email" class="form-label">
+                <i class="fas fa-envelope me-2"></i>Email
+              </label>
+              <input 
+                type="email" 
+                class="form-control" 
+                id="email" 
+                formControlName="email"
+                [ngClass]="{ 'is-invalid': submitted && f['email'].errors }"
+                placeholder="Entrez votre email">
+              <div *ngIf="submitted && f['email'].errors" class="invalid-feedback">
+                <div *ngIf="f['email'].errors['required']">
+                  <i class="fas fa-exclamation-circle me-1"></i>L'email est requis
+                </div>
+                <div *ngIf="f['email'].errors['email']">
+                  <i class="fas fa-exclamation-circle me-1"></i>Veuillez entrer un email valide
+                </div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label">
+                <i class="fas fa-lock me-2"></i>Mot de passe
+              </label>
+              <div class="password-input-container">
+                <input 
+                  [type]="showPassword ? 'text' : 'password'"
+                  class="form-control" 
+                  id="password" 
+                  formControlName="password"
+                  [ngClass]="{ 'is-invalid': submitted && f['password'].errors }"
+                  placeholder="Entrez votre mot de passe">
+                <button 
+                  type="button" 
+                  class="password-toggle" 
+                  (click)="togglePassword()"
+                  [attr.aria-label]="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'">
+                  <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                </button>
+              </div>
+              <div *ngIf="submitted && f['password'].errors" class="invalid-feedback">
+                <div *ngIf="f['password'].errors['required']">
+                  <i class="fas fa-exclamation-circle me-1"></i>Le mot de passe est requis
+                </div>
+                <div *ngIf="f['password'].errors['minlength']">
+                  <i class="fas fa-exclamation-circle me-1"></i>Le mot de passe doit contenir au moins 6 caractères
+                </div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="confirmPassword" class="form-label">
+                <i class="fas fa-lock me-2"></i>Confirmer le mot de passe
+              </label>
+              <div class="password-input-container">
+                <input 
+                  [type]="showConfirmPassword ? 'text' : 'password'"
+                  class="form-control" 
+                  id="confirmPassword" 
+                  formControlName="confirmPassword"
+                  [ngClass]="{ 'is-invalid': submitted && f['confirmPassword'].errors }"
+                  placeholder="Confirmez votre mot de passe">
+                <button 
+                  type="button" 
+                  class="password-toggle" 
+                  (click)="toggleConfirmPassword()"
+                  [attr.aria-label]="showConfirmPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'">
+                  <i [class]="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                </button>
+              </div>
+              <div *ngIf="submitted && f['confirmPassword'].errors" class="invalid-feedback">
+                <div *ngIf="f['confirmPassword'].errors['required']">
+                  <i class="fas fa-exclamation-circle me-1"></i>La confirmation du mot de passe est requise
+                </div>
+                <div *ngIf="f['confirmPassword'].errors['mustMatch']">
+                  <i class="fas fa-exclamation-circle me-1"></i>Les mots de passe ne correspondent pas
+                </div>
+              </div>
+            </div>
+            
+            <div *ngIf="errorMessage" class="alert alert-danger mb-3">
+              <i class="fas fa-exclamation-triangle me-2"></i>{{ errorMessage }}
+            </div>
+            
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-success" [disabled]="isLoading">
+                <span *ngIf="!isLoading">
+                  <i class="fas fa-user-plus me-2"></i>S'inscrire
+                </span>
+                <span *ngIf="isLoading">
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                  <span>Inscription...</span>
+                </span>
+              </button>
+            </div>
+          </form>
+          <div class="text-center mt-4">
+            <p class="mb-0">Déjà un compte ?</p>
+            <a routerLink="/login" class="d-inline-block mt-2">
+              <i class="fas fa-sign-in-alt me-1"></i>Se connecter
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

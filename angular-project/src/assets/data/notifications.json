@@ -1,0 +1,47 @@
+[
+  {
+    "id": "notif_001",
+    "type": "success",
+    "title": "Bienvenue",
+    "message": "Votre compte a été créé avec succès",
+    "timestamp": "2024-01-15T10:30:00.000Z",
+    "read": false,
+    "userId": "user_001"
+  },
+  {
+    "id": "notif_002",
+    "type": "info",
+    "title": "Nouvelle fonctionnalité",
+    "message": "Découvrez notre nouvelle interface de profil",
+    "timestamp": "2024-01-14T14:20:00.000Z",
+    "read": true,
+    "userId": "user_001"
+  },
+  {
+    "id": "notif_003",
+    "type": "warning",
+    "title": "Mise à jour de sécurité",
+    "message": "Veuillez mettre à jour votre mot de passe pour plus de sécurité",
+    "timestamp": "2024-01-13T09:15:00.000Z",
+    "read": false,
+    "userId": "user_001"
+  },
+  {
+    "id": "notif_004",
+    "type": "error",
+    "title": "Erreur de connexion",
+    "message": "Échec de la connexion au serveur",
+    "timestamp": "2024-01-12T16:45:00.000Z",
+    "read": true,
+    "userId": "user_001"
+  },
+  {
+    "id": "notif_005",
+    "type": "success",
+    "title": "Profil mis à jour",
+    "message": "Vos informations personnelles ont été mises à jour",
+    "timestamp": "2024-01-11T11:30:00.000Z",
+    "read": false,
+    "userId": "user_002"
+  }
+]
