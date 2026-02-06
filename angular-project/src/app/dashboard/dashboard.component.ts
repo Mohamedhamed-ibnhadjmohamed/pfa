@@ -4,7 +4,6 @@ import { Router, RouterLink, RouterOutlet, NavigationEnd } from '@angular/router
 import { filter, Subscription } from 'rxjs';
 import { NavbarComponent } from '../components/navbar/navbar.component';
 import { ThemeToggleComponent } from '../components/theme-toggle/theme-toggle.component';
-import { NotificationService } from '../services/notification.service';
 import { AuthService } from '../auth/auth.service';
 
 @Component({
@@ -153,8 +152,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
-    private authService: AuthService,
-    private notificationService: NotificationService
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -192,7 +190,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private setupRouterListener(): void {
     this.routerSubscription = this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd)
     ).subscribe((event: NavigationEnd) => {
       this.updatePageTitle(event.urlAfterRedirects);
     });
@@ -229,25 +227,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // Actions utilisateur
   toggleSidebar(): void {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
-    this.notificationService.showInfo(
-      this.isSidebarCollapsed ? 'Barre latérale réduite' : 'Barre latérale développée',
-      'Interface'
+    console.log(
+      this.isSidebarCollapsed ? 'Barre latérale réduite' : 'Barre latérale développée'
     );
   }
 
   refreshData(): void {
-    this.notificationService.showInfo('Actualisation des données...', 'Actualisation');
+    console.log('Actualisation des données...');
     
     // Simuler l'actualisation des données
     setTimeout(() => {
       this.loadCurrentUser();
       this.checkUnreadNotifications();
-      this.notificationService.showSuccess('Données actualisées avec succès', 'Succès');
+      console.log('Données actualisées avec succès');
     }, 1000);
   }
 
   showNotifications(): void {
-    this.notificationService.showInfo('Redirection vers les notifications...', 'Notifications');
+    console.log('Redirection vers les notifications...');
     // Dans une vraie application, ouvrir un modal ou naviguer vers la page des notifications
     this.unreadCount = 0; // Marquer comme lues
   }
@@ -255,16 +252,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   toggleFullscreen(): void {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen();
-      this.notificationService.showInfo('Mode plein écran activé', 'Affichage');
+      console.log('Mode plein écran activé');
     } else {
       document.exitFullscreen();
-      this.notificationService.showInfo('Mode plein écran désactivé', 'Affichage');
+      console.log('Mode plein écran désactivé');
     }
   }
 
   logout(): void {
     if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-      this.notificationService.showInfo('Déconnexion en cours...', 'Déconnexion');
+      console.log('Déconnexion en cours...');
       
       setTimeout(() => {
         // Nettoyer les données utilisateur
@@ -274,7 +271,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         // Utiliser le service d'authentification
         this.authService.logout();
         
-        this.notificationService.showSuccess('Déconnexion réussie', 'Au revoir');
+        console.log('Déconnexion réussie');
         
         // Rediriger vers la page de login
         this.router.navigate(['/login']);

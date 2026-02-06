@@ -1,7 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
+import { StorageUtil } from '../utils/storage.util';
+import { isPlatformBrowser } from '@angular/common';
 
 export interface User {
   id: number;
@@ -46,7 +48,12 @@ export interface Connection {
 export interface LoginRequest {
   email: string;
   password: string;
+  device?: string;  // Device type for connection tracking
+  location?: string; // Location for connection tracking
 }
+
+// Force recompilation - interface update
+
 
 export interface RegisterRequest {
   firstName: string;
@@ -55,6 +62,8 @@ export interface RegisterRequest {
   password: string;
   phone?: string;
   location?: string;
+  newsletter?: boolean; // User preference for newsletter subscription
+  acceptTerms?: boolean; // Legal acceptance of terms and conditions
 }
 
 @Injectable({
@@ -64,7 +73,10 @@ export class UserService {
   private readonly API_URL = 'http://localhost:3000/api';
   private currentUser: User | null = null;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
 
   // Authentification
   login(credentials: LoginRequest): Observable<User> {
@@ -101,10 +113,17 @@ export class UserService {
       return of(this.currentUser);
     }
 
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-      this.currentUser = JSON.parse(savedUser);
-      return of(this.currentUser);
+    if (isPlatformBrowser(this.platformId)) {
+      const savedUser = StorageUtil.getItem('currentUser');
+      if (savedUser) {
+        try {
+          this.currentUser = JSON.parse(savedUser);
+          return of(this.currentUser);
+        } catch (error) {
+          console.error('Error parsing saved user:', error);
+          StorageUtil.removeItem('currentUser');
+        }
+      }
     }
 
     return of(null);
@@ -159,11 +178,15 @@ export class UserService {
   // Déconnexion
   logout(): void {
     this.currentUser = null;
-    localStorage.removeItem('currentUser');
+    if (isPlatformBrowser(this.platformId)) {
+      StorageUtil.removeItem('currentUser');
+    }
   }
 
   // Méthodes privées
   private saveToLocalStorage(user: User): void {
-    localStorage.setItem('currentUser', JSON.stringify(user));
+    if (isPlatformBrowser(this.platformId)) {
+      StorageUtil.setItem('currentUser', JSON.stringify(user));
+    }
   }
 }

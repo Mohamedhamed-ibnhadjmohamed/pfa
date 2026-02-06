@@ -1,0 +1,152 @@
+<div class="user-profile" *ngIf="user">
+  <!-- En-tête du profil -->
+  <div class="profile-header">
+    <div class="avatar-section">
+      <img [src]="avatarUrl" [alt]="fullName" class="avatar" />
+      <div class="status-indicator" *ngIf="settings.publicProfile">
+        <span class="status-dot"></span>
+        <span class="status-text">Profil public</span>
+      </div>
+    </div>
+    
+    <div class="profile-info">
+      <h2 class="user-name">{{ fullName }}</h2>
+      <p class="user-email">{{ user.email }}</p>
+      <p class="member-since">Membre depuis {{ formattedCreatedAt }}</p>
+      
+      <!-- Informations supplémentaires -->
+      <div class="user-details" *ngIf="user.phone || user.location || user.gender">
+        <span class="detail-item" *ngIf="formattedPhone">
+          <i class="fas fa-phone"></i> {{ formattedPhone }}
+        </span>
+        <span class="detail-item" *ngIf="user.location">
+          <i class="fas fa-map-marker-alt"></i> {{ user.location }}
+        </span>
+        <span class="detail-item" *ngIf="user.gender">
+          <i class="fas fa-venus-mars"></i> {{ genderText }}
+        </span>
+        <span class="detail-item" *ngIf="age">
+          <i class="fas fa-birthday-cake"></i> {{ age }} ans
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Biographie -->
+  <div class="profile-bio" *ngIf="user.bio">
+    <h3>Biographie</h3>
+    <p>{{ user.bio }}</p>
+  </div>
+
+  <!-- Site web -->
+  <div class="profile-website" *ngIf="user.website">
+    <h3>Site web</h3>
+    <a [href]="user.website" target="_blank" rel="noopener noreferrer" class="website-link">
+      <i class="fas fa-external-link-alt"></i> {{ user.website }}
+    </a>
+  </div>
+
+  <!-- Paramètres du profil -->
+  <div class="profile-settings" *ngIf="showSettings">
+    <h3>Paramètres du profil</h3>
+    <div class="settings-grid">
+      <div class="setting-item">
+        <i class="fas fa-shield-alt" [class.text-success]="settings.twoFactorEnabled" 
+           [class.text-muted]="!settings.twoFactorEnabled"></i>
+        <span>Authentification à deux facteurs</span>
+        <span class="setting-value" [class.text-success]="settings.twoFactorEnabled" 
+              [class.text-muted]="!settings.twoFactorEnabled">
+          {{ settings.twoFactorEnabled ? 'Activée' : 'Désactivée' }}
+        </span>
+      </div>
+      
+      <div class="setting-item">
+        <i class="fas fa-envelope" [class.text-success]="settings.emailNotifications" 
+           [class.text-muted]="!settings.emailNotifications"></i>
+        <span>Notifications par email</span>
+        <span class="setting-value" [class.text-success]="settings.emailNotifications" 
+              [class.text-muted]="!settings.emailNotifications">
+          {{ settings.emailNotifications ? 'Activées' : 'Désactivées' }}
+        </span>
+      </div>
+      
+      <div class="setting-item">
+        <i class="fas fa-eye-slash" [class.text-warning]="settings.privateSession" 
+           [class.text-success]="!settings.privateSession"></i>
+        <span>Session privée</span>
+        <span class="setting-value" [class.text-warning]="settings.privateSession" 
+              [class.text-success]="!settings.privateSession">
+          {{ settings.privateSession ? 'Activée' : 'Désactivée' }}
+        </span>
+      </div>
+      
+      <div class="setting-item">
+        <i class="fas fa-globe" [class.text-success]="settings.publicProfile" 
+           [class.text-muted]="!settings.publicProfile"></i>
+        <span>Profil public</span>
+        <span class="setting-value" [class.text-success]="settings.publicProfile" 
+              [class.text-muted]="!settings.publicProfile">
+          {{ settings.publicProfile ? 'Public' : 'Privé' }}
+        </span>
+      </div>
+      
+      <div class="setting-item">
+        <i class="fas fa-search" [class.text-success]="settings.emailSearchable" 
+           [class.text-muted]="!settings.emailSearchable"></i>
+        <span>Email searchable</span>
+        <span class="setting-value" [class.text-success]="settings.emailSearchable" 
+              [class.text-muted]="!settings.emailSearchable">
+          {{ settings.emailSearchable ? 'Oui' : 'Non' }}
+        </span>
+      </div>
+      
+      <div class="setting-item">
+        <i class="fas fa-share-alt" [class.text-warning]="settings.dataSharing" 
+           [class.text-success]="!settings.dataSharing"></i>
+        <span>Partage de données</span>
+        <span class="setting-value" [class.text-warning]="settings.dataSharing" 
+              [class.text-success]="!settings.dataSharing">
+          {{ settings.dataSharing ? 'Activé' : 'Désactivé' }}
+        </span>
+      </div>
+      
+      <div class="setting-item">
+        <i class="fas fa-clock"></i>
+        <span>Fuseau horaire</span>
+        <span class="setting-value">{{ settings.timezone }}</span>
+      </div>
+      
+      <div class="setting-item">
+        <i class="fas fa-calendar"></i>
+        <span>Format de date</span>
+        <span class="setting-value">{{ settings.dateFormat }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Connexions récentes -->
+  <div class="profile-connections" *ngIf="recentConnections.length > 0">
+    <h3>Connexions récentes</h3>
+    <div class="connections-list">
+      <div class="connection-item" *ngFor="let connection of recentConnections">
+        <div class="connection-info">
+          <i class="fas fa-{{ connection.device === 'mobile' ? 'mobile-alt' : 'desktop' }}"></i>
+          <span class="connection-device">{{ connection.device }}</span>
+          <span class="connection-location">{{ connection.location }}</span>
+        </div>
+        <div class="connection-time">
+          {{ connection.date | date:'short' }}
+        </div>
+      </div>
+    </div>
+    <p class="connections-count">Total: {{ connectionsCount }} connexions</p>
+  </div>
+</div>
+
+<!-- Message d'erreur si pas de données utilisateur -->
+<div class="no-user-data" *ngIf="!user">
+  <div class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>Aucune donnée utilisateur disponible</p>
+  </div>
+</div>

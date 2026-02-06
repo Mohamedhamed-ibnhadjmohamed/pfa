@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { StorageUtil } from '../../utils/storage.util';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-loading',
@@ -184,13 +186,25 @@ export class LoadingComponent implements OnInit {
     'L\'application fonctionne hors ligne avec certaines limitations'
   ];
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
 
   ngOnInit(): void {
-    this.startLoading();
+    if (isPlatformBrowser(this.platformId)) {
+      this.startLoading();
+    } else {
+      // En SSR, rediriger directement après un court délai
+      setTimeout(() => {
+        this.navigateToNext();
+      }, 1000);
+    }
   }
 
   private startLoading(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    
     let messageIndex = 0;
     let tipIndex = Math.floor(Math.random() * this.tips.length);
     
@@ -220,8 +234,13 @@ export class LoadingComponent implements OnInit {
 
   private navigateToNext(): void {
     // Navigate based on user's intended destination or default
-    const intendedRoute = localStorage.getItem('intendedRoute') || '/dashboard';
-    localStorage.removeItem('intendedRoute');
+    let intendedRoute = '/dashboard';
+    
+    if (isPlatformBrowser(this.platformId)) {
+      intendedRoute = StorageUtil.getItem('intendedRoute') || '/dashboard';
+      StorageUtil.removeItem('intendedRoute');
+    }
+    
     this.router.navigate([intendedRoute]);
   }
 }

@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-dashboard-home',
@@ -164,11 +163,11 @@ export class DashboardHomeComponent implements OnInit {
     }
   ];
 
-  constructor(private notificationService: NotificationService) {}
+  constructor() {}
 
   ngOnInit(): void {
     this.loadDashboardData();
-    this.notificationService.showSuccess('Bienvenue sur votre tableau de bord', 'Accueil');
+    console.log('Bienvenue sur votre tableau de bord');
   }
 
   private loadDashboardData(): void {
@@ -181,14 +180,14 @@ export class DashboardHomeComponent implements OnInit {
   }
 
   navigateToProfile(): void {
-    this.notificationService.showInfo('Redirection vers le profil...', 'Navigation');
+    console.log('Redirection vers le profil...');
   }
 
   navigateToSettings(): void {
-    this.notificationService.showInfo('Redirection vers les paramètres...', 'Navigation');
+    console.log('Redirection vers les paramètres...');
   }
 
   navigateToHistory(): void {
-    this.notificationService.showInfo('Redirection vers l\'historique...', 'Navigation');
+    console.log('Redirection vers l\'historique...');
   }
 }

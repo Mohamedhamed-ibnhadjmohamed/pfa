@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
-const db = require('../config/database');
+const db = require('../database/connection');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
@@ -10,19 +10,26 @@ class AuthController {
   // Validation middleware
   static validateLogin = [
     body('email').isEmail().normalizeEmail().withMessage('Email invalide'),
-    body('password').isLength({ min: 6 }).withMessage('Le mot de passe doit contenir au moins 6 caractères')
+    body('password').isLength({ min: 1 }).withMessage('Le mot de passe est requis')
   ];
 
   static validateRegister = [
     body('firstName').trim().isLength({ min: 2 }).withMessage('Le prénom doit contenir au moins 2 caractères'),
     body('lastName').trim().isLength({ min: 2 }).withMessage('Le nom doit contenir au moins 2 caractères'),
     body('email').isEmail().normalizeEmail().withMessage('Email invalide'),
-    body('password').isLength({ min: 6 }).withMessage('Le mot de passe doit contenir au moins 6 caractères'),
-    body('phone').optional().isMobilePhone('fr-FR').withMessage('Numéro de téléphone invalide'),
+    body('password')
+      .isLength({ min: 8, max: 128 })
+      .withMessage('Le mot de passe doit contenir entre 8 et 128 caractères')
+      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+      .withMessage('Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre')
+      .matches(/^(?=.*[!@#$%^&*(),.?":{}|<>])/)
+      .withMessage('Le mot de passe doit contenir au moins un caractère spécial (!@#$%^&*(),.?":{}|<>)'),
+    body('phone').optional().isMobilePhone('any').withMessage('Numéro de téléphone invalide'),
     body('location').optional().trim().isLength({ max: 255 }).withMessage('La localisation est trop longue')
+    // acceptTerms et newsletter sont gérés uniquement côté frontend
   ];
 
-  async login(req, res) {
+  static async login(req, res) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -34,33 +41,22 @@ class AuthController {
 
       const { email, password } = req.body;
 
-      // Rechercher l'utilisateur
+      // Rechercher l'utilisateur (sans dépendre d'une VIEW)
       const users = await db.query(`
-        SELECT u.*, 
-               JSON_OBJECT(
-                 'twoFactorEnabled', us.two_factor_enabled,
-                 'emailNotifications', us.email_notifications,
-                 'privateSession', us.private_session,
-                 'publicProfile', us.public_profile,
-                 'emailSearchable', us.email_searchable,
-                 'dataSharing', us.data_sharing,
-                 'timezone', us.timezone,
-                 'dateFormat', us.date_format
-               ) as settings,
-               (SELECT JSON_ARRAYAGG(
-                 JSON_OBJECT(
-                   'id', uc.id,
-                   'date', uc.connection_date,
-                   'device', uc.device,
-                   'location', uc.location,
-                   'ipAddress', uc.ip_address,
-                   'browser', uc.browser,
-                   'status', uc.status
-                 )
-               ) FROM user_connections uc WHERE uc.user_id = u.id) as connections
+        SELECT
+          u.*,
+          us.two_factor_enabled as twoFactorEnabled,
+          us.email_notifications as emailNotifications,
+          us.private_session as privateSession,
+          us.public_profile as publicProfile,
+          us.email_searchable as emailSearchable,
+          us.data_sharing as dataSharing,
+          us.timezone as timezone,
+          us.date_format as dateFormat
         FROM users u
         LEFT JOIN user_settings us ON u.id = us.user_id
         WHERE u.email = ?
+        LIMIT 1
       `, [email]);
 
       if (users.length === 0) {
@@ -83,7 +79,7 @@ class AuthController {
       );
 
       // Ajouter une nouvelle connexion
-      await this.addConnection(user.id, {
+      await AuthController.addConnection(user.id, {
         device: req.body.device || 'unknown',
         location: req.body.location || 'Unknown',
         ipAddress: req.ip || req.connection.remoteAddress,
@@ -94,10 +90,18 @@ class AuthController {
       // Retirer le mot de passe de la réponse
       const { password: _, ...userWithoutPassword } = user;
 
+      // Générer le refresh token
+      const refreshToken = jwt.sign(
+        { userId: user.id, type: 'refresh' },
+        JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+
       res.json({
         message: 'Connexion réussie',
         user: userWithoutPassword,
-        token
+        token,
+        refreshToken
       });
 
     } catch (error) {
@@ -106,7 +110,7 @@ class AuthController {
     }
   }
 
-  async register(req, res) {
+  static async register(req, res) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -122,13 +126,13 @@ class AuthController {
         email,
         password,
         phone,
+        bio,
         location,
         website,
         birthDate,
         gender,
         language,
         avatar,
-        settings
       } = req.body;
 
       const connection = await db.getConnection();
@@ -152,7 +156,7 @@ class AuthController {
 
         // Insérer le nouvel utilisateur
         const [userResult] = await connection.execute(`
-          INSERT INTO users (first_name, last_name, email, password, phone, bio, location, website, birth_date, gender, language, avatar)
+          INSERT INTO users (firstName, lastName, email, password, phone, bio, location, website, birthDate, gender, language, avatar)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
           firstName,
@@ -160,7 +164,7 @@ class AuthController {
           email,
           hashedPassword,
           phone || null,
-          req.body.bio || null,
+          bio || null,
           location || null,
           website || null,
           birthDate || null,
@@ -177,45 +181,34 @@ class AuthController {
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
           userId,
-          settings?.twoFactorEnabled || false,
-          settings?.emailNotifications || true,
-          settings?.privateSession || false,
-          settings?.publicProfile || true,
-          settings?.emailSearchable || false,
-          settings?.dataSharing || false,
-          settings?.timezone || 'Europe/Paris',
-          settings?.dateFormat || 'DD/MM/YYYY'
+          false, // twoFactorEnabled
+          true, // email_notifications (par défaut, newsletter géré côté frontend)
+          false, // privateSession
+          true, // publicProfile
+          false, // emailSearchable
+          false, // dataSharing
+          'Europe/Paris', // timezone
+          'DD/MM/YYYY' // dateFormat
         ]);
 
         await connection.commit();
 
-        // Récupérer l'utilisateur créé
+        // Récupérer l'utilisateur créé (sans dépendre d'une VIEW)
         const newUser = await db.query(`
-          SELECT u.*, 
-                 JSON_OBJECT(
-                   'twoFactorEnabled', us.two_factor_enabled,
-                   'emailNotifications', us.email_notifications,
-                   'privateSession', us.private_session,
-                   'publicProfile', us.public_profile,
-                   'emailSearchable', us.email_searchable,
-                   'dataSharing', us.data_sharing,
-                   'timezone', us.timezone,
-                   'dateFormat', us.date_format
-                 ) as settings,
-                 (SELECT JSON_ARRAYAGG(
-                   JSON_OBJECT(
-                     'id', uc.id,
-                     'date', uc.connection_date,
-                     'device', uc.device,
-                     'location', uc.location,
-                     'ipAddress', uc.ip_address,
-                     'browser', uc.browser,
-                     'status', uc.status
-                   )
-                 ) FROM user_connections uc WHERE uc.user_id = u.id) as connections
+          SELECT
+            u.*,
+            us.two_factor_enabled as twoFactorEnabled,
+            us.email_notifications as emailNotifications,
+            us.private_session as privateSession,
+            us.public_profile as publicProfile,
+            us.email_searchable as emailSearchable,
+            us.data_sharing as dataSharing,
+            us.timezone as timezone,
+            us.date_format as dateFormat
           FROM users u
           LEFT JOIN user_settings us ON u.id = us.user_id
           WHERE u.id = ?
+          LIMIT 1
         `, [userId]);
 
         // Générer le token JWT
@@ -225,12 +218,20 @@ class AuthController {
           { expiresIn: JWT_EXPIRES_IN }
         );
 
+        // Générer le refresh token
+        const refreshToken = jwt.sign(
+          { userId: newUser[0].id, type: 'refresh' },
+          JWT_SECRET,
+          { expiresIn: '7d' }
+        );
+
         const { password: _, ...userWithoutPassword } = newUser[0];
 
         res.status(201).json({
           message: 'Inscription réussie',
           user: userWithoutPassword,
-          token
+          token,
+          refreshToken
         });
 
       } catch (error) {
@@ -250,7 +251,7 @@ class AuthController {
     }
   }
 
-  async refreshToken(req, res) {
+  static async refreshToken(req, res) {
     try {
       const token = req.headers.authorization?.replace('Bearer ', '');
       
@@ -285,7 +286,7 @@ class AuthController {
     }
   }
 
-  async logout(req, res) {
+  static async logout(req, res) {
     try {
       // Dans une implémentation plus avancée, on pourrait ajouter le token à une liste noire
       res.json({ message: 'Déconnexion réussie' });
@@ -295,7 +296,7 @@ class AuthController {
     }
   }
 
-  async addConnection(userId, connectionData) {
+  static async addConnection(userId, connectionData) {
     try {
       await db.query(`
         INSERT INTO user_connections (user_id, device, location, ip_address, browser, status)
@@ -314,4 +315,4 @@ class AuthController {
   }
 }
 
-module.exports = new AuthController();
+module.exports = AuthController;

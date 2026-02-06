@@ -72,8 +72,8 @@ import { Router } from '@angular/router';
         <div class="maintenance-contact">
           <p>Questions ? Contactez notre support :</p>
           <div class="contact-info">
-            <a href="mailto:support@exemple.com">
-              <i class="fas fa-envelope me-2"></i>support@exemple.com
+            <a href="mailto:support&#64;exemple.com">
+              <i class="fas fa-envelope me-2"></i>support&#64;exemple.com
             </a>
             <a href="tel:+33123456789">
               <i class="fas fa-phone me-2"></i>+33 1 23 45 67 89

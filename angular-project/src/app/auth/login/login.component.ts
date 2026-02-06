@@ -1,9 +1,12 @@
-import { Component, OnInit } from '@angular/core';
-import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, OnInit, PLATFORM_ID, Inject } from '@angular/core';
+import { FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '../auth.service';
-import { NotificationService } from '../../services/notification.service';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { AuthService, AuthResponse } from '../../services/auth.service';
+import { StorageUtil } from '../../utils/storage.util';
+import { isPlatformBrowser } from '@angular/common';
 import { ThemeToggleComponent } from '../../components/theme-toggle/theme-toggle.component';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 
@@ -30,31 +33,35 @@ export class LoginComponent implements OnInit {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private notificationService: NotificationService
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email, Validators.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)]],
-      password: ['', [Validators.required, Validators.minLength(6), Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
       rememberMe: [false]
     });
 
     // Vérifier si l'utilisateur était bloqué
-    const blockedUntil = localStorage.getItem('blockedUntil');
-    if (blockedUntil && new Date(blockedUntil) > new Date()) {
-      this.isBlocked = true;
-      this.updateBlockTimeRemaining();
+    if (isPlatformBrowser(this.platformId)) {
+      const blockedUntil = StorageUtil.getItem('blockedUntil');
+      if (blockedUntil && new Date(blockedUntil) > new Date()) {
+        this.isBlocked = true;
+        this.updateBlockTimeRemaining();
+      }
     }
   }
 
   ngOnInit(): void {
     // Vérifier s'il y a une route intentionnelle
-    const intendedRoute = localStorage.getItem('intendedRoute');
-    if (intendedRoute) {
-      this.notificationService.showInfo('Veuillez vous connecter pour accéder à la page demandée', 'Authentification requise');
+    if (isPlatformBrowser(this.platformId)) {
+      const intendedRoute = StorageUtil.getItem('intendedRoute');
+      if (intendedRoute) {
+        console.log('Veuillez vous connecter pour accéder à la page demandée');
+      }
     }
 
     // Vérifier si l'utilisateur est déjà connecté
-    if (this.authService.isLoggedIn()) {
+    if (this.authService.isAuthenticated()) {
       this.router.navigate(['/dashboard']);
     }
 
@@ -75,7 +82,6 @@ export class LoginComponent implements OnInit {
     if (emailControl?.errors) {
       if (emailControl.errors['required']) errors.push('L\'email est requis');
       if (emailControl.errors['email']) errors.push('Format d\'email invalide');
-      if (emailControl.errors['pattern']) errors.push('L\'email doit être valide');
     }
     
     return errors;
@@ -88,7 +94,6 @@ export class LoginComponent implements OnInit {
     if (passwordControl?.errors) {
       if (passwordControl.errors['required']) errors.push('Le mot de passe est requis');
       if (passwordControl.errors['minlength']) errors.push('Minimum 6 caractères');
-      if (passwordControl.errors['pattern']) errors.push('Doit contenir majuscule, minuscule et chiffre');
     }
     
     return errors;
@@ -104,13 +109,13 @@ export class LoginComponent implements OnInit {
 
     // Vérifier si l'utilisateur est bloqué
     if (this.isBlocked) {
-      this.notificationService.showError('Compte temporairement bloqué. Veuillez réessayer plus tard.', 'Compte bloqué');
+      console.error('Compte temporairement bloqué. Veuillez réessayer plus tard.');
       return;
     }
 
     // Validation du formulaire
     if (this.loginForm.invalid) {
-      this.notificationService.showWarning('Veuillez corriger les erreurs dans le formulaire', 'Formulaire invalide');
+      console.warn('Veuillez corriger les erreurs dans le formulaire');
       this.markFormGroupTouched(this.loginForm);
       return;
     }
@@ -120,45 +125,48 @@ export class LoginComponent implements OnInit {
 
     // Validation supplémentaire
     if (!this.validateEmail(email)) {
-      this.notificationService.showError('Format d\'email invalide', 'Erreur de validation');
-      return;
-    }
-
-    if (!this.validatePassword(password)) {
-      this.notificationService.showError('Le mot de passe ne respecte pas les critères de sécurité', 'Erreur de validation');
+      console.error('Format d\'email invalide');
       return;
     }
 
     this.isLoading = true;
-    this.notificationService.showInfo('Tentative de connexion en cours...', 'Connexion');
+    console.log('Tentative de connexion en cours...');
 
-    this.authService.login(email, password).subscribe({
-      next: (response) => {
+    // Envoyer les données de connexion au serveur
+    this.authService.login({ 
+      email, 
+      password
+    }).subscribe({
+      next: (response: AuthResponse) => {
         this.isLoading = false;
         this.loginAttempts = 0; // Réinitialiser les tentatives
+        this.errorMessage = '';
         
         // Sauvegarder l'état "remember me"
-        if (this.rememberMe) {
-          localStorage.setItem('rememberMe', 'true');
-        } else {
-          localStorage.removeItem('rememberMe');
+        if (this.rememberMe && isPlatformBrowser(this.platformId)) {
+          StorageUtil.setItem('rememberMe', 'true');
+        } else if (isPlatformBrowser(this.platformId)) {
+          StorageUtil.removeItem('rememberMe');
         }
 
-        this.notificationService.showSuccess('Connexion réussie !', 'Bienvenue');
+        console.log('Connexion réussie !');
         
         // Rediriger vers la page demandée ou le dashboard
-        const intendedRoute = localStorage.getItem('intendedRoute');
-        setTimeout(() => {
-          if (intendedRoute) {
-            localStorage.removeItem('intendedRoute');
-            this.router.navigate([intendedRoute]);
-          } else {
-            this.router.navigate(['/dashboard']);
-          }
-        }, 1500);
+        const targetRoute = isPlatformBrowser(this.platformId)
+          ? (StorageUtil.getItem('intendedRoute') || '/dashboard')
+          : '/dashboard';
+
+        if (isPlatformBrowser(this.platformId)) {
+          StorageUtil.removeItem('intendedRoute');
+        }
+
+        // `AuthService` a déjà sauvegardé token/refreshToken/currentUser
+        // via son `tap(handleAuthSuccess)`.
+        this.router.navigate([targetRoute]);
       },
-      error: (error) => {
+      error: (error: string) => {
         this.isLoading = false;
+        this.errorMessage = error;
         this.handleLoginError(error);
       }
     });
@@ -171,10 +179,7 @@ export class LoginComponent implements OnInit {
       this.blockAccount();
     } else {
       const remainingAttempts = this.maxLoginAttempts - this.loginAttempts;
-      this.notificationService.showError(
-        `Échec de connexion. ${remainingAttempts} tentative(s) restante(s)`,
-        'Erreur de connexion'
-      );
+      console.error(`Échec de connexion. ${remainingAttempts} tentative(s) restante(s)`);
     }
   }
 
@@ -183,12 +188,13 @@ export class LoginComponent implements OnInit {
     const blockDuration = 5 * 60 * 1000; // 5 minutes en millisecondes
     const blockedUntil = new Date(Date.now() + blockDuration);
     
-    localStorage.setItem('blockedUntil', blockedUntil.toISOString());
-    localStorage.setItem('loginAttempts', this.loginAttempts.toString());
+    if (isPlatformBrowser(this.platformId)) {
+      StorageUtil.setItem('blockedUntil', blockedUntil.toISOString());
+      StorageUtil.setItem('loginAttempts', this.loginAttempts.toString());
+    }
     
-    this.notificationService.showError(
-      'Trop de tentatives de connexion. Compte bloqué pour 5 minutes.',
-      'Compte bloqué'
+    console.error(
+      'Trop de tentatives de connexion. Compte bloqué pour 5 minutes.'
     );
     
     this.startBlockCountdown();
@@ -201,16 +207,20 @@ export class LoginComponent implements OnInit {
       if (this.blockTimeRemaining <= 0) {
         this.isBlocked = false;
         this.loginAttempts = 0;
-        localStorage.removeItem('blockedUntil');
-        localStorage.removeItem('loginAttempts');
+        if (isPlatformBrowser(this.platformId)) {
+          StorageUtil.removeItem('blockedUntil');
+          StorageUtil.removeItem('loginAttempts');
+        }
         clearInterval(interval);
-        this.notificationService.showInfo('Compte débloqué. Vous pouvez maintenant vous connecter.', 'Compte débloqué');
+        console.log('Compte débloqué. Vous pouvez maintenant vous connecter.');
       }
     }, 1000);
   }
 
   private updateBlockTimeRemaining(): void {
-    const blockedUntil = localStorage.getItem('blockedUntil');
+    if (!isPlatformBrowser(this.platformId)) return;
+    
+    const blockedUntil = StorageUtil.getItem('blockedUntil');
     if (blockedUntil) {
       const remaining = new Date(blockedUntil).getTime() - Date.now();
       this.blockTimeRemaining = Math.max(0, Math.floor(remaining / 1000));
@@ -220,12 +230,6 @@ export class LoginComponent implements OnInit {
   private validateEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
-  }
-
-  private validatePassword(password: string): boolean {
-    // Au moins 6 caractères, une majuscule, une minuscule et un chiffre
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
-    return passwordRegex.test(password);
   }
 
   private markFormGroupTouched(formGroup: FormGroup): void {
@@ -244,7 +248,7 @@ export class LoginComponent implements OnInit {
   }
 
   forgotPassword(): void {
-    this.notificationService.showInfo('Redirection vers la page de récupération de mot de passe...', 'Mot de passe oublié');
+    console.log('Redirection vers la page de récupération de mot de passe...');
     // Dans une vraie application, naviguer vers la page de récupération
   }
 }

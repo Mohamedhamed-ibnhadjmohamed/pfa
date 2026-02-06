@@ -1,6 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserService, LoginRequest, RegisterRequest } from '../services/user.service';
+import { StorageUtil } from '../utils/storage.util';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
@@ -8,7 +10,8 @@ import { UserService, LoginRequest, RegisterRequest } from '../services/user.ser
 export class AuthService {
   constructor(
     private userService: UserService,
-    private router: Router
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   login(email: string, password: string) {
@@ -25,7 +28,8 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    return localStorage.getItem('currentUser') !== null;
+    if (!isPlatformBrowser(this.platformId)) return false;
+    return StorageUtil.getItem('currentUser') !== null;
   }
 
   getCurrentUser() {

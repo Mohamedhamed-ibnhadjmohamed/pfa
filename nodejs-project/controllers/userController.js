@@ -1,32 +1,21 @@
-const db = require('../config/database');
+const db = require('../database/connection');
 const bcrypt = require('bcryptjs');
 
 class UserController {
-  async getAllUsers(req, res) {
+  static async getAllUsers(req, res) {
     try {
+      // Récupérer les utilisateurs (sans dépendre d'une VIEW)
       const users = await db.query(`
-        SELECT u.*, 
-               JSON_OBJECT(
-                 'twoFactorEnabled', us.two_factor_enabled,
-                 'emailNotifications', us.email_notifications,
-                 'privateSession', us.private_session,
-                 'publicProfile', us.public_profile,
-                 'emailSearchable', us.email_searchable,
-                 'dataSharing', us.data_sharing,
-                 'timezone', us.timezone,
-                 'dateFormat', us.date_format
-               ) as settings,
-               (SELECT JSON_ARRAYAGG(
-                 JSON_OBJECT(
-                   'id', uc.id,
-                   'date', uc.connection_date,
-                   'device', uc.device,
-                   'location', uc.location,
-                   'ipAddress', uc.ip_address,
-                   'browser', uc.browser,
-                   'status', uc.status
-                 )
-               ) FROM user_connections uc WHERE uc.user_id = u.id) as connections
+        SELECT
+          u.*,
+          us.two_factor_enabled as twoFactorEnabled,
+          us.email_notifications as emailNotifications,
+          us.private_session as privateSession,
+          us.public_profile as publicProfile,
+          us.email_searchable as emailSearchable,
+          us.data_sharing as dataSharing,
+          us.timezone as timezone,
+          us.date_format as dateFormat
         FROM users u
         LEFT JOIN user_settings us ON u.id = us.user_id
         ORDER BY u.created_at DESC
@@ -38,56 +27,48 @@ class UserController {
       });
       
       res.json(usersWithoutPassword);
+
     } catch (error) {
       console.error('Error fetching users:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ message: 'Erreur serveur' });
     }
   }
 
-  async getUserById(req, res) {
+  static async getUserById(req, res) {
     try {
       const { id } = req.params;
+      // Récupérer l'utilisateur (sans dépendre d'une VIEW)
       const users = await db.query(`
-        SELECT u.*, 
-               JSON_OBJECT(
-                 'twoFactorEnabled', us.two_factor_enabled,
-                 'emailNotifications', us.email_notifications,
-                 'privateSession', us.private_session,
-                 'publicProfile', us.public_profile,
-                 'emailSearchable', us.email_searchable,
-                 'dataSharing', us.data_sharing,
-                 'timezone', us.timezone,
-                 'dateFormat', us.date_format
-               ) as settings,
-               (SELECT JSON_ARRAYAGG(
-                 JSON_OBJECT(
-                   'id', uc.id,
-                   'date', uc.connection_date,
-                   'device', uc.device,
-                   'location', uc.location,
-                   'ipAddress', uc.ip_address,
-                   'browser', uc.browser,
-                   'status', uc.status
-                 )
-               ) FROM user_connections uc WHERE uc.user_id = u.id) as connections
+        SELECT
+          u.*,
+          us.two_factor_enabled as twoFactorEnabled,
+          us.email_notifications as emailNotifications,
+          us.private_session as privateSession,
+          us.public_profile as publicProfile,
+          us.email_searchable as emailSearchable,
+          us.data_sharing as dataSharing,
+          us.timezone as timezone,
+          us.date_format as dateFormat
         FROM users u
         LEFT JOIN user_settings us ON u.id = us.user_id
         WHERE u.id = ?
+        LIMIT 1
       `, [id]);
       
       if (users.length === 0) {
-        return res.status(404).json({ error: 'User not found' });
+        return res.status(404).json({ message: 'Utilisateur non trouvé' });
       }
       
       const { password, ...userWithoutPassword } = users[0];
       res.json(userWithoutPassword);
+
     } catch (error) {
       console.error('Error fetching user:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ message: 'Erreur serveur' });
     }
   }
 
-  async createUser(req, res) {
+  static async createUser(req, res) {
     try {
       const {
         firstName,
@@ -160,7 +141,7 @@ class UserController {
     }
   }
 
-  async updateUser(req, res) {
+  static async updateUser(req, res) {
     try {
       const { id } = req.params;
       const {
@@ -224,7 +205,7 @@ class UserController {
     }
   }
 
-  async deleteUser(req, res) {
+  static async deleteUser(req, res) {
     try {
       const { id } = req.params;
       
@@ -241,7 +222,7 @@ class UserController {
     }
   }
 
-  async addConnection(req, res) {
+  static async addConnection(req, res) {
     try {
       const { id } = req.params;
       const { device, location, ipAddress, browser, status } = req.body;
@@ -262,4 +243,4 @@ class UserController {
   }
 }
 
-module.exports = new UserController();
+module.exports = UserController;

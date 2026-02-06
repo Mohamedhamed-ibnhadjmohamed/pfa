@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-account-settings',
@@ -234,8 +233,7 @@ export class AccountSettingsComponent implements OnInit {
   };
 
   constructor(
-    private router: Router,
-    private notificationService: NotificationService
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -243,25 +241,27 @@ export class AccountSettingsComponent implements OnInit {
   }
 
   private loadSettings(): void {
-    this.notificationService.showInfo('Chargement des paramètres...', 'Paramètres');
+    console.log('Chargement des paramètres...');
   }
 
   toggle2FA(): void {
     if (this.settings.twoFactorEnabled) {
-      this.notificationService.showWarning('Activez l\'authentification à deux facteurs dans votre application mobile', '2FA');
+      console.log('Double authentification activée');
     } else {
-      this.notificationService.showInfo('2FA désactivé', 'Sécurité');
+      console.log('Double authentification désactivée');
     }
   }
 
   changePassword(): void {
-    this.notificationService.showInfo('Redirection vers la page de changement de mot de passe...', 'Sécurité');
+    console.log('Redirection vers la page de changement de mot de passe...');
     // Dans une vraie application, cela ouvrirait un modal ou naviguerait vers une page dédiée
   }
 
   saveSettings(): void {
-    this.notificationService.showSuccess('Paramètres sauvegardés avec succès', 'Succès');
-    console.log('Settings saved:', this.settings);
+    console.log('Enregistrement des paramètres...');
+    setTimeout(() => {
+      console.log('Paramètres enregistrés avec succès');
+    }, 1000);
   }
 
   resetSettings(): void {
@@ -276,12 +276,12 @@ export class AccountSettingsComponent implements OnInit {
       timezone: 'Europe/Paris',
       dateFormat: 'DD/MM/YYYY'
     };
-    this.notificationService.showInfo('Paramètres réinitialisés', 'Paramètres');
+    console.log('Paramètres réinitialisés');
   }
 
   disableAccount(): void {
     if (confirm('Êtes-vous sûr de vouloir désactiver votre compte ? Vous pourrez le réactiver plus tard.')) {
-      this.notificationService.showWarning('Compte désactivé', 'Compte');
+      console.log('Compte désactivé');
       setTimeout(() => {
         this.router.navigate(['/login']);
       }, 2000);
@@ -291,12 +291,12 @@ export class AccountSettingsComponent implements OnInit {
   deleteAccount(): void {
     const confirmation = prompt('Pour supprimer votre compte, tapez "SUPPRIMER" en majuscules :');
     if (confirmation === 'SUPPRIMER') {
-      this.notificationService.showError('Compte supprimé définitivement', 'Suppression');
+      console.log('Compte supprimé définitivement');
       setTimeout(() => {
         this.router.navigate(['/login']);
       }, 2000);
     } else if (confirmation) {
-      this.notificationService.showError('Texte de confirmation incorrect', 'Erreur');
+      console.error('Texte de confirmation incorrect');
     }
   }
 }

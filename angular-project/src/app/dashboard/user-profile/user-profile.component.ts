@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { User } from '../../services/user.service';
-import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-user-profile',
@@ -14,140 +13,87 @@ import { NotificationService } from '../../services/notification.service';
         <h1>Profil utilisateur</h1>
         <p class="text-muted">Gérez vos informations personnelles</p>
       </div>
-      
-      <div class="row" *ngIf="user; else loading">
-        <!-- Avatar Section -->
-        <div class="col-md-4 mb-4">
+
+      <div class="profile-content">
+        <div class="profile-section">
           <div class="avatar-section">
             <div class="avatar-container">
-              <img [src]="user.avatar || defaultAvatar" alt="Avatar" class="avatar-large">
+              <img [src]="user?.avatar || defaultAvatar" alt="Avatar" class="avatar">
               <div class="avatar-overlay">
                 <label for="avatar-upload" class="avatar-upload-btn">
                   <i class="fas fa-camera"></i>
-                  <span>Changer</span>
                 </label>
-                <input 
-                  type="file" 
-                  id="avatar-upload" 
-                  accept="image/*" 
-                  (change)="onAvatarUpload($event)"
-                  style="display: none;">
+                <input type="file" id="avatar-upload" (change)="onAvatarUpload($event)" accept="image/*">
               </div>
-            </div>
-            <div class="avatar-info">
-              <h5>{{ user.firstName }} {{ user.lastName }}</h5>
-              <p class="text-muted">{{ user.email }}</p>
-              <small class="text-info">Cliquez sur l'avatar pour le modifier</small>
             </div>
           </div>
-        </div>
-        
-        <!-- Profile Form -->
-        <div class="col-md-8 mb-4">
-          <div class="profile-form">
-            <h4>Informations personnelles</h4>
-            <form (ngSubmit)="updateProfile()">
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label for="firstName" class="form-label">Prénom</label>
-                  <input 
-                    type="text" 
-                    class="form-control" 
-                    id="firstName" 
-                    [(ngModel)]="profile.firstName"
-                    name="firstName">
+
+          <div class="info-section">
+            <form (ngSubmit)="updateProfile()" #profileForm="ngForm">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="firstName">Prénom</label>
+                  <input type="text" id="firstName" name="firstName" [(ngModel)]="profile.firstName" required>
                 </div>
-                <div class="col-md-6 mb-3">
-                  <label for="lastName" class="form-label">Nom</label>
-                  <input 
-                    type="text" 
-                    class="form-control" 
-                    id="lastName" 
-                    [(ngModel)]="profile.lastName"
-                    name="lastName">
+                <div class="form-group">
+                  <label for="lastName">Nom</label>
+                  <input type="text" id="lastName" name="lastName" [(ngModel)]="profile.lastName" required>
                 </div>
               </div>
-              
-              <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input 
-                  type="email" 
-                  class="form-control" 
-                  id="email" 
-                  [(ngModel)]="profile.email"
-                  name="email">
+
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" [(ngModel)]="profile.email" required>
               </div>
-              
-              <div class="mb-3">
-                <label for="phone" class="form-label">Téléphone</label>
-                <input 
-                  type="tel" 
-                  class="form-control" 
-                  id="phone" 
-                  [(ngModel)]="profile.phone"
-                  name="phone">
+
+              <div class="form-group">
+                <label for="phone">Téléphone</label>
+                <input type="tel" id="phone" name="phone" [(ngModel)]="profile.phone">
               </div>
-              
-              <div class="mb-3">
-                <label for="bio" class="form-label">Biographie</label>
-                <textarea 
-                  class="form-control" 
-                  id="bio" 
-                  rows="4"
-                  [(ngModel)]="profile.bio"
-                  name="bio"
-                  placeholder="Parlez-nous de vous..."></textarea>
+
+              <div class="form-group">
+                <label for="bio">Biographie</label>
+                <textarea id="bio" name="bio" [(ngModel)]="profile.bio" rows="4"></textarea>
               </div>
-              
-              <div class="mb-3">
-                <label for="location" class="form-label">Localisation</label>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  id="location" 
-                  [(ngModel)]="profile.location"
-                  name="location"
-                  placeholder="Ville, Pays">
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="location">Localisation</label>
+                  <input type="text" id="location" name="location" [(ngModel)]="profile.location">
+                </div>
+                <div class="form-group">
+                  <label for="website">Site web</label>
+                  <input type="url" id="website" name="website" [(ngModel)]="profile.website">
+                </div>
               </div>
-              
-              <div class="mb-3">
-                <label for="website" class="form-label">Site web</label>
-                <input 
-                  type="url" 
-                  class="form-control" 
-                  id="website" 
-                  [(ngModel)]="profile.website"
-                  name="website"
-                  placeholder="https://example.com">
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="birthDate">Date de naissance</label>
+                  <input type="date" id="birthDate" name="birthDate" [(ngModel)]="profile.birthDate">
+                </div>
+                <div class="form-group">
+                  <label for="gender">Genre</label>
+                  <select id="gender" name="gender" [(ngModel)]="profile.gender">
+                    <option value="">Sélectionner</option>
+                    <option value="Homme">Homme</option>
+                    <option value="Femme">Femme</option>
+                    <option value="Autre">Autre</option>
+                  </select>
+                </div>
               </div>
-              
-              <div class="d-flex gap-2">
+
+              <div class="form-actions">
+                <button type="button" class="btn btn-secondary" (click)="cancel()">Annuler</button>
                 <button type="submit" class="btn btn-primary" [disabled]="isLoading">
-                  <i class="fas fa-save me-2"></i>
-                  <span *ngIf="!isLoading">Enregistrer</span>
-                  <span *ngIf="isLoading">
-                    <span class="spinner-border spinner-border-sm me-2"></span>
-                    <span>Inscription...</span>
-                  </span>
-                </button>
-                <button type="button" class="btn btn-outline-secondary" (click)="cancel()">
-                  Annuler
+                  <span *ngIf="isLoading" class="spinner"></span>
+                  {{ isLoading ? 'Mise à jour...' : 'Mettre à jour' }}
                 </button>
               </div>
             </form>
           </div>
         </div>
       </div>
-      
-      <!-- Loading Template -->
-      <ng-template #loading>
-        <div class="text-center">
-          <div class="spinner-border" role="status">
-            <span class="visually-hidden">Chargement...</span>
-          </div>
-          <p class="mt-2">Chargement du profil...</p>
-        </div>
-      </ng-template>
     </div>
   `,
   styleUrl: './user-profile.component.scss'
@@ -158,16 +104,14 @@ export class UserProfileComponent implements OnInit {
   isLoading = false;
   defaultAvatar = 'https://picsum.photos/seed/default/200/200.jpg';
 
-  constructor(
-    private notificationService: NotificationService
-  ) {}
+  constructor() {}
 
   ngOnInit(): void {
     this.loadUserProfile();
   }
 
   loadUserProfile(): void {
-    this.notificationService.showInfo('Chargement du profil...', 'Profil');
+    console.log('Chargement du profil...');
     
     // Mock user data for demo
     this.user = {
@@ -175,14 +119,16 @@ export class UserProfileComponent implements OnInit {
       firstName: 'John',
       lastName: 'Doe',
       email: 'john.doe@example.com',
-      password: 'hashedpassword',
       phone: '+33 6 12 34 56 78',
-      bio: 'Développeur Angular passionné',
+      bio: 'Développeur passionné par les nouvelles technologies.',
       location: 'Paris, France',
       website: 'https://johndoe.dev',
+      birthDate: '1990-01-15',
+      gender: 'Homme',
+      language: 'Français',
       avatar: 'https://picsum.photos/seed/user123/200/200.jpg',
-      createdAt: '2024-01-01T00:00:00.000Z',
-      updatedAt: '2024-01-15T00:00:00.000Z',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       settings: {
         twoFactorEnabled: false,
         emailNotifications: true,
@@ -197,13 +143,13 @@ export class UserProfileComponent implements OnInit {
     };
     
     this.profile = { ...this.user };
-    this.notificationService.showSuccess('Profil chargé avec succès', 'Succès');
+    console.log('Profil chargé avec succès');
   }
 
   onAvatarUpload(event: any): void {
     const file = event.target.files[0];
     if (file && this.user) {
-      this.notificationService.showInfo('Téléchargement de l\'avatar...', 'Avatar');
+      console.log('Téléchargement de l\'avatar...');
       
       // Simuler l'upload
       const reader = new FileReader();
@@ -211,7 +157,7 @@ export class UserProfileComponent implements OnInit {
         const avatarData = e.target?.result as string;
         this.user!.avatar = avatarData;
         this.profile.avatar = avatarData;
-        this.notificationService.showSuccess('Avatar mis à jour avec succès', 'Avatar');
+        console.log('Avatar mis à jour avec succès');
       };
       reader.readAsDataURL(file);
     }
@@ -221,13 +167,13 @@ export class UserProfileComponent implements OnInit {
     if (!this.user) return;
 
     this.isLoading = true;
-    this.notificationService.showInfo('Mise à jour du profil...', 'Profil');
+    console.log('Mise à jour du profil...');
 
     // Simuler la mise à jour
     setTimeout(() => {
       this.user = { ...this.user, ...this.profile };
       this.isLoading = false;
-      this.notificationService.showSuccess('Profil mis à jour avec succès', 'Succès');
+      console.log('Profil mis à jour avec succès');
     }, 1000);
   }
 

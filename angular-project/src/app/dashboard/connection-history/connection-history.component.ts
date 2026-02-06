@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-connection-history',
@@ -291,17 +290,17 @@ export class ConnectionHistoryComponent implements OnInit {
     }
   ];
 
-  constructor(private notificationService: NotificationService) {}
+  constructor() {}
 
   ngOnInit(): void {
     this.loadConnectionHistory();
   }
 
   private loadConnectionHistory(): void {
-    this.notificationService.showInfo('Chargement de l\'historique des connexions...', 'Historique');
+    console.log('Chargement de l\'historique des connexions...');
     // Simuler le chargement des données
     setTimeout(() => {
-      this.notificationService.showSuccess('Historique chargé avec succès', 'Succès');
+      console.log('Historique chargé avec succès');
     }, 1000);
   }
 
@@ -310,7 +309,7 @@ export class ConnectionHistoryComponent implements OnInit {
   }
 
   applyFilters(): void {
-    this.notificationService.showInfo('Application des filtres...', 'Filtres');
+    console.log('Application des filtres...');
     // Logique de filtrage à implémenter
   }
   
@@ -356,31 +355,31 @@ export class ConnectionHistoryComponent implements OnInit {
   }
 
   showDetails(connection: any): void {
-    this.notificationService.showInfo(`Détails de la connexion du ${connection.date.toLocaleDateString()}`, 'Détails');
+    console.log(`Détails de la connexion du ${connection.date.toLocaleDateString()}`);
   }
 
   revokeConnection(connection: any): void {
     if (confirm(`Révoquer la connexion du ${connection.date.toLocaleDateString()} ?`)) {
-      this.notificationService.showWarning('Connexion révoquée', 'Sécurité');
+      console.log('Connexion révoquée');
     }
   }
   
   changePage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
-      this.notificationService.showInfo(`Navigation vers la page ${page}`, 'Pagination');
+      console.log(`Navigation vers la page ${page}`);
     }
   }
 
   terminateSession(session: any): void {
     if (confirm(`Terminer la session active sur ${this.getDeviceName(session.device)} ?`)) {
-      this.notificationService.showWarning('Session terminée', 'Session');
+      console.log('Session terminée');
     }
   }
 
   revokeSession(session: any): void {
     if (confirm(`Révoquer la session active sur ${this.getDeviceName(session.device)} ?`)) {
-      this.notificationService.showError('Session révoquée', 'Sécurité');
+      console.log('Session révoquée');
     }
   }
   
