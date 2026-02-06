@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { UserService, User } from '../../services/user.service';
+import { DashboardService, DashboardStats, Activity } from '../../services/dashboard.service';
 
 @Component({
   selector: 'app-dashboard-home',
@@ -128,55 +130,63 @@ import { RouterLink } from '@angular/router';
   styleUrl: './dashboard-home.component.scss'
 })
 export class DashboardHomeComponent implements OnInit {
-  profileCompletion = 85;
-  securityStatus = '2FA Activé';
-  securityClass = 'text-success';
-  securityIcon = '✓';
-  securityText = 'Sécurisé';
-  monthlyConnections = 12;
-  lastConnection = 'Aujourd\'hui';
-  unreadNotifications = 3;
-  memberSince = 'Janvier 2024';
-  lastLogin = 'Aujourd\'hui à 14:30';
+  profileCompletion = 0;
+  securityStatus = '';
+  securityClass = '';
+  securityIcon = '';
+  securityText = '';
+  monthlyConnections = 0;
+  lastConnection = '';
+  unreadNotifications = 0;
+  memberSince = '';
+  lastLogin = '';
 
-  recentActivities = [
-    {
-      type: 'success',
-      icon: 'fas fa-user-check',
-      title: 'Profil mis à jour',
-      description: 'Vos informations personnelles ont été mises à jour avec succès',
-      time: 'Il y a 2 heures'
-    },
-    {
-      type: 'info',
-      icon: 'fas fa-sign-in-alt',
-      title: 'Nouvelle connexion',
-      description: 'Connexion depuis Chrome sur Windows',
-      time: 'Il y a 5 heures'
-    },
-    {
-      type: 'warning',
-      icon: 'fas fa-shield-alt',
-      title: 'Sécurité',
-      description: 'Pensez à mettre à jour votre mot de passe',
-      time: 'Hier'
-    }
-  ];
+  recentActivities: Activity[] = [];
+  
+  private userId: number | null = null;
 
-  constructor() {}
+  constructor(
+    private userService: UserService,
+    private dashboardService: DashboardService
+  ) {}
 
   ngOnInit(): void {
-    this.loadDashboardData();
+    this.loadCurrentUser();
     console.log('Bienvenue sur votre tableau de bord');
   }
 
+  private loadCurrentUser(): void {
+    this.userService.getCurrentUser().subscribe((user: User | null) => {
+      if (user) {
+        this.userId = user.id;
+        this.loadDashboardData();
+      } else {
+        // Utiliser un ID par défaut pour la démo
+        this.userId = 1;
+        this.loadDashboardData();
+      }
+    });
+  }
+
   private loadDashboardData(): void {
-    // Simuler le chargement des données du dashboard
-    setTimeout(() => {
-      this.profileCompletion = Math.floor(Math.random() * 30) + 70; // 70-100%
-      this.monthlyConnections = Math.floor(Math.random() * 20) + 5; // 5-25
-      this.unreadNotifications = Math.floor(Math.random() * 10); // 0-10
-    }, 1000);
+    if (this.userId) {
+      this.dashboardService.getDashboardStats(this.userId).subscribe((stats: DashboardStats) => {
+        this.profileCompletion = stats.profileCompletion;
+        this.securityStatus = stats.securityStatus;
+        this.securityClass = stats.securityClass;
+        this.securityIcon = stats.securityIcon;
+        this.securityText = stats.securityText;
+        this.monthlyConnections = stats.monthlyConnections;
+        this.lastConnection = stats.lastConnection;
+        this.unreadNotifications = stats.unreadNotifications;
+        this.memberSince = stats.memberSince;
+        this.lastLogin = stats.lastLogin;
+      });
+
+      this.dashboardService.getRecentActivities(this.userId).subscribe((activities: Activity[]) => {
+        this.recentActivities = activities;
+      });
+    }
   }
 
   navigateToProfile(): void {

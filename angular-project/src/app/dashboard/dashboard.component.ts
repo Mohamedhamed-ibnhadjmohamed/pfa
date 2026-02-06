@@ -5,6 +5,8 @@ import { filter, Subscription } from 'rxjs';
 import { NavbarComponent } from '../components/navbar/navbar.component';
 import { ThemeToggleComponent } from '../components/theme-toggle/theme-toggle.component';
 import { AuthService } from '../auth/auth.service';
+import { UserService } from '../services/user.service';
+import { DashboardService } from '../services/dashboard.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -149,10 +151,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   
   private routerSubscription: Subscription | null = null;
   private onlineStatusInterval: any;
+  private userId: number | null = null;
 
   constructor(
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private userService: UserService,
+    private dashboardService: DashboardService
   ) {}
 
   ngOnInit(): void {
@@ -172,20 +177,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private loadCurrentUser(): void {
-    // Récupérer l'utilisateur courant depuis le localStorage ou le service
-    const userFromStorage = localStorage.getItem('currentUser');
-    if (userFromStorage) {
-      this.currentUser = JSON.parse(userFromStorage);
-    } else {
-      // Utiliser des données par défaut pour la démo
-      this.currentUser = {
-        id: 1,
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'john.doe@example.com',
-        avatar: 'https://picsum.photos/seed/user123/100/100.jpg'
-      };
-    }
+    this.userService.getCurrentUser().subscribe(user => {
+      if (user) {
+        this.currentUser = user;
+        this.userId = user.id;
+        this.loadDashboardData();
+      } else {
+        // Utiliser des données par défaut pour la démo
+        this.currentUser = {
+          id: 1,
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john.doe@example.com',
+          avatar: 'https://picsum.photos/seed/user123/100/100.jpg'
+        };
+        this.userId = 1;
+        this.loadDashboardData();
+      }
+    });
   }
 
   private setupRouterListener(): void {
@@ -211,17 +220,32 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private startOnlineStatusMonitoring(): void {
-    // Simuler les changements de statut en ligne
-    this.onlineStatusInterval = setInterval(() => {
-      this.isUserOnline = Math.random() > 0.1; // 90% de chance d'être en ligne
-    }, 30000); // Vérifier toutes les 30 secondes
+    if (this.userId) {
+      this.dashboardService.getUserOnlineStatus(this.userId).subscribe(isOnline => {
+        this.isUserOnline = isOnline;
+      });
+      
+      this.onlineStatusInterval = setInterval(() => {
+        this.dashboardService.getUserOnlineStatus(this.userId!).subscribe(isOnline => {
+          this.isUserOnline = isOnline;
+        });
+      }, 30000);
+    }
+  }
+
+  private loadDashboardData(): void {
+    if (this.userId) {
+      this.checkUnreadNotifications();
+      this.startOnlineStatusMonitoring();
+    }
   }
 
   private checkUnreadNotifications(): void {
-    // Simuler la vérification des notifications non lues
-    setTimeout(() => {
-      this.unreadCount = Math.floor(Math.random() * 10);
-    }, 2000);
+    if (this.userId) {
+      this.dashboardService.getUnreadNotificationsCount(this.userId).subscribe(count => {
+        this.unreadCount = count;
+      });
+    }
   }
 
   // Actions utilisateur
@@ -235,18 +259,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
   refreshData(): void {
     console.log('Actualisation des données...');
     
-    // Simuler l'actualisation des données
-    setTimeout(() => {
-      this.loadCurrentUser();
-      this.checkUnreadNotifications();
-      console.log('Données actualisées avec succès');
-    }, 1000);
+    if (this.userId) {
+      this.dashboardService.refreshDashboardData(this.userId).subscribe(() => {
+        this.loadCurrentUser();
+        console.log('Données actualisées avec succès');
+      });
+    } else {
+      setTimeout(() => {
+        this.loadCurrentUser();
+        console.log('Données actualisées avec succès');
+      }, 1000);
+    }
   }
 
   showNotifications(): void {
     console.log('Redirection vers les notifications...');
-    // Dans une vraie application, ouvrir un modal ou naviguer vers la page des notifications
-    this.unreadCount = 0; // Marquer comme lues
+    if (this.userId) {
+      this.dashboardService.markNotificationsAsRead(this.userId).subscribe(() => {
+        this.unreadCount = 0;
+      });
+    }
   }
 
   toggleFullscreen(): void {
