@@ -1,129 +1,303 @@
 .dashboard-home {
-  max-width: 1200px;
-  margin: 0 auto;
+  min-height: 100vh;
+  background: #f8f9fa;
 }
 
 .page-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 3rem 0;
   margin-bottom: 2rem;
 }
 
 .page-header h1 {
-  color: var(--text-primary);
-  font-weight: 700;
-  margin-bottom: 0.5rem;
+  color: white;
+  font-weight: 600;
+  margin: 0;
 }
 
+.page-header p {
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+// Stats Cards
 .stat-card {
-  background: var(--bg-card);
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 15px var(--shadow-light);
-  border: 1px solid var(--border-color);
-  display: flex;
-  align-items: center;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   height: 100%;
 }
 
 .stat-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 25px var(--shadow-medium);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
 }
 
 .stat-icon {
   width: 60px;
   height: 60px;
-  border-radius: 12px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 1rem;
+  margin-bottom: 1rem;
   font-size: 1.5rem;
   color: white;
+  transition: all 0.3s ease;
+}
+
+.stat-icon.bg-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.stat-icon.bg-success {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.stat-icon.bg-info {
+  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+}
+
+.stat-icon.bg-warning {
+  background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+}
+
+.stat-card:hover .stat-icon {
+  transform: scale(1.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.stat-content {
+  flex: 1;
+  min-width: 0;
 }
 
 .stat-content h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.1rem;
+  color: #333;
   font-weight: 600;
-  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
 }
 
 .stat-content p {
-  margin: 0 0 0.5rem 0;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
 }
 
-.action-card, .info-card {
-  background: var(--bg-card);
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 15px var(--shadow-light);
-  border: 1px solid var(--border-color);
+.progress {
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+// Action Cards
+.action-card {
+  background: white;
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
   height: 100%;
 }
 
-.action-card h4, .info-card h4 {
-  color: var(--text-primary);
-  margin-bottom: 1rem;
+.action-card h4 {
+  color: #333;
   font-weight: 600;
+  margin-bottom: 1.5rem;
 }
 
 .action-buttons {
   display: flex;
-  flex-wrap: wrap;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .action-buttons .btn {
+  padding: 0.5rem 1rem;
   border-radius: 8px;
   font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.action-buttons .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+// Info Card
+.info-card {
+  background: white;
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  height: 100%;
+}
+
+.info-card h4 {
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
 }
 
 .info-list {
   list-style: none;
   padding: 0;
-  margin: 0;
 }
 
 .info-list li {
+  display: flex;
+  justify-content: space-between;
   padding: 0.5rem 0;
-  border-bottom: 1px solid var(--border-color);
-  color: var(--text-secondary);
+  border-bottom: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
 }
 
 .info-list li:last-child {
   border-bottom: none;
 }
 
-.info-list strong {
-  color: var(--text-primary);
+.info-list li:hover {
+  background: rgba(102, 126, 234, 0.05);
 }
 
-.progress {
-  height: 6px;
-  border-radius: 3px;
-  background: var(--bg-secondary);
+// Activity Card
+.activity-card {
+  background: white;
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
 }
 
-.progress-bar {
-  border-radius: 3px;
+.activity-card h4 {
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
 }
 
-// Responsive
+.activity-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.activity-item:hover {
+  background: rgba(102, 126, 234, 0.05);
+  transform: translateX(5px);
+}
+
+.activity-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1rem;
+  color: white;
+}
+
+.activity-item.success .activity-icon {
+  background: #28a745;
+}
+
+.activity-item.info .activity-icon {
+  background: #17a2b8;
+}
+
+.activity-item.warning .activity-icon {
+  background: #ffc107;
+  color: #212529;
+}
+
+.activity-item.error .activity-icon {
+  background: #dc3545;
+}
+
+.activity-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-content h6 {
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.activity-content p {
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+}
+
+.activity-content small {
+  color: #6c757d;
+  font-size: 0.875rem;
+}
+
+// Responsive Design
 @media (max-width: 768px) {
   .stat-card {
+    margin-bottom: 1.5rem;
+  }
+  
+  .action-card,
+  .info-card,
+  .activity-card {
+    margin-bottom: 1.5rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .action-buttons .btn {
+    width: 100%;
+    margin-bottom: 0.25rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .page-header {
+    padding: 2rem 0;
+  }
+  
+  .page-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+  }
+  
+  .activity-item {
     flex-direction: column;
     text-align: center;
   }
   
-  .stat-icon {
-    margin-right: 0;
-    margin-bottom: 1rem;
-  }
-  
-  .action-buttons {
-    justify-content: center;
+  .activity-content {
+    text-align: center;
   }
 }

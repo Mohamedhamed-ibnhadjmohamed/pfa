@@ -5,7 +5,8 @@ import { Router, RouterLink } from '@angular/router';
 
 import { ThemeToggleComponent } from '../../components/theme-toggle/theme-toggle.component';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
-import { AuthService, RegisterRequest } from '../../services/auth.service';
+import { AuthService } from '../../services/auth.service';
+import { RegisterRequest } from '../../services/user.service';
 
 @Component({
   selector: 'app-register',

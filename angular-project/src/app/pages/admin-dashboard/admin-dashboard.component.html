@@ -1,0 +1,260 @@
+<div class="dashboard-container">
+  <app-navbar></app-navbar>
+  
+  <div class="container-fluid mt-4">
+    <div class="row">
+      <div class="col-12">
+        <div class="card dashboard-card">
+          <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">
+              <i class="fas fa-tachometer-alt me-2"></i>
+              Dashboard Administrateur
+            </h3>
+            <div>
+              <button class="btn btn-success btn-sm" (click)="createNewUser()" [disabled]="isEditing || isCreating">
+                <i class="fas fa-plus me-2"></i>Nouvel utilisateur
+              </button>
+              <button class="btn btn-outline-light btn-sm ms-2" (click)="logout()">
+                <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
+              </button>
+            </div>
+          </div>
+          
+          <div class="card-body">
+            <!-- Success/Error Messages -->
+            <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+              {{ successMessage }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            
+            <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+              {{ errorMessage }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- User Form (Create/Edit) -->
+            <div *ngIf="isEditing || isCreating" class="user-form mb-4">
+              <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                  <h5 class="mb-0">
+                    <i class="fas fa-user me-2"></i>
+                    {{ isCreating ? 'Créer un nouvel utilisateur' : 'Modifier l\'utilisateur' }}
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <form [formGroup]="userForm" (ngSubmit)="isCreating ? createUser() : updateUser()">
+                    <div class="row">
+                      <div class="col-md-6 mb-3">
+                        <label for="firstName" class="form-label">Prénom</label>
+                        <input 
+                          type="text" 
+                          class="form-control" 
+                          id="firstName" 
+                          formControlName="firstName"
+                          [class.is-invalid]="userForm.get('firstName')?.invalid && userForm.get('firstName')?.touched"
+                        >
+                        <div class="invalid-feedback" *ngIf="userForm.get('firstName')?.invalid && userForm.get('firstName')?.touched">
+                          Le prénom doit contenir au moins 2 caractères
+                        </div>
+                      </div>
+                      
+                      <div class="col-md-6 mb-3">
+                        <label for="lastName" class="form-label">Nom</label>
+                        <input 
+                          type="text" 
+                          class="form-control" 
+                          id="lastName" 
+                          formControlName="lastName"
+                          [class.is-invalid]="userForm.get('lastName')?.invalid && userForm.get('lastName')?.touched"
+                        >
+                        <div class="invalid-feedback" *ngIf="userForm.get('lastName')?.invalid && userForm.get('lastName')?.touched">
+                          Le nom doit contenir au moins 2 caractères
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input 
+                          type="email" 
+                          class="form-control" 
+                          id="email" 
+                          formControlName="email"
+                          [class.is-invalid]="userForm.get('email')?.invalid && userForm.get('email')?.touched"
+                          [readonly]="isEditing"
+                        >
+                        <div class="invalid-feedback" *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched">
+                          Email invalide
+                        </div>
+                        <small *ngIf="isEditing" class="text-muted">L'email ne peut pas être modifié</small>
+                      </div>
+                      
+                      <div class="col-md-6 mb-3">
+                        <label for="phone" class="form-label">Téléphone</label>
+                        <input 
+                          type="tel" 
+                          class="form-control" 
+                          id="phone" 
+                          formControlName="phone"
+                          placeholder="Numéro de téléphone (optionnel)"
+                        >
+                      </div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-md-6 mb-3">
+                        <label for="role" class="form-label">Rôle</label>
+                        <select 
+                          class="form-select" 
+                          id="role" 
+                          formControlName="role"
+                          [class.is-invalid]="userForm.get('role')?.invalid && userForm.get('role')?.touched"
+                        >
+                          <option value="user">Utilisateur</option>
+                          <option value="moderator">Modérateur</option>
+                          <option value="admin">Administrateur</option>
+                          <option value="guest">Invité</option>
+                        </select>
+                      </div>
+                      
+                      <div class="col-md-6 mb-3">
+                        <label for="password" class="form-label">
+                          Mot de passe 
+                          <small *ngIf="isEditing" class="text-muted">(laisser vide pour ne pas modifier)</small>
+                        </label>
+                        <input 
+                          type="password" 
+                          class="form-control" 
+                          id="password" 
+                          formControlName="password"
+                          [class.is-invalid]="userForm.get('password')?.invalid && userForm.get('password')?.touched"
+                        >
+                        <div class="invalid-feedback" *ngIf="userForm.get('password')?.invalid && userForm.get('password')?.touched">
+                          Le mot de passe doit contenir au moins 8 caractères
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                      <div>
+                        <button type="submit" class="btn btn-primary" [disabled]="isLoading || userForm.invalid">
+                          <i class="fas fa-save me-2"></i>
+                          {{ isLoading ? 'Enregistrement...' : (isCreating ? 'Créer' : 'Mettre à jour') }}
+                        </button>
+                        <button type="button" class="btn btn-secondary ms-2" (click)="cancelForm()">
+                          <i class="fas fa-times me-2"></i>Annuler
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="users-table">
+              <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                  <thead class="table-dark">
+                    <tr>
+                      <th>ID</th>
+                      <th>Nom</th>
+                      <th>Email</th>
+                      <th>Téléphone</th>
+                      <th>Rôle</th>
+                      <th>Date d'inscription</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngIf="isLoading">
+                      <td colspan="7" class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                          <span class="visually-hidden">Chargement...</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr *ngIf="!isLoading && users.length === 0">
+                      <td colspan="7" class="text-center text-muted">
+                        Aucun utilisateur trouvé
+                      </td>
+                    </tr>
+                    <tr *ngFor="let user of users; trackBy: trackByUserId">
+                      <td>{{ user.id }}</td>
+                      <td>{{ user.firstName }} {{ user.lastName }}</td>
+                      <td>{{ user.email }}</td>
+                      <td>{{ user.phone || '-' }}</td>
+                      <td>
+                        <span class="badge" [class]="getRoleBadgeClass(user.role)">
+                          {{ getRoleDisplayName(user.role) }}
+                        </span>
+                      </td>
+                      <td>{{ user.createdAt | date:'dd/MM/yyyy' }}</td>
+                      <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                          <button 
+                            class="btn btn-outline-primary" 
+                            (click)="editUser(user)"
+                            [disabled]="isEditing || isCreating"
+                            title="Modifier"
+                          >
+                            <i class="fas fa-edit"></i>
+                          </button>
+                          <button 
+                            class="btn btn-outline-danger" 
+                            (click)="deleteUser(user.id)"
+                            [disabled]="isEditing || isCreating || user.id === currentUser?.id"
+                            title="Supprimer"
+                          >
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="row mt-4">
+              <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                  <div class="card-body text-center">
+                    <h3>{{ users.length }}</h3>
+                    <p class="mb-0">Total utilisateurs</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card bg-success text-white">
+                  <div class="card-body text-center">
+                    <h3>{{ getUserCountByRole('user') }}</h3>
+                    <p class="mb-0">Utilisateurs</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                  <div class="card-body text-center">
+                    <h3>{{ getUserCountByRole('moderator') }}</h3>
+                    <p class="mb-0">Modérateurs</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card bg-danger text-white">
+                  <div class="card-body text-center">
+                    <h3>{{ getUserCountByRole('admin') }}</h3>
+                    <p class="mb-0">Administrateurs</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,75 @@
+<div class="maintenance-container">
+  <div class="maintenance-content">
+    <div class="maintenance-icon">
+      <i class="fas fa-tools"></i>
+    </div>
+    <h1 class="maintenance-title">Maintenance en cours</h1>
+    <p class="maintenance-message">
+      Notre application est actuellement en maintenance pour améliorer vos services.
+      Nous serons de retour très prochainement !
+    </p>
+    
+    <div class="maintenance-info">
+      <div class="info-item">
+        <i class="fas fa-clock"></i>
+        <div>
+          <h4>Durée estimée</h4>
+          <p>{{ estimatedDuration }}</p>
+        </div>
+      </div>
+      <div class="info-item">
+        <i class="fas fa-calendar"></i>
+        <div>
+          <h4>Date de fin</h4>
+          <p>{{ endDate }}</p>
+        </div>
+      </div>
+      <div class="info-item">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          <h4>Impact</h4>
+          <p>{{ impact }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="maintenance-progress">
+      <h3>Progression de la maintenance</h3>
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="progress"></div>
+      </div>
+      <span class="progress-text">{{ progress }}% complété</span>
+    </div>
+
+    <div class="maintenance-actions">
+      <button class="btn btn-primary" (click)="refreshPage()">
+        <i class="fas fa-sync-alt me-2"></i>Vérifier le statut
+      </button>
+      <button class="btn btn-outline-secondary" (click)="notifyMe()">
+        <i class="fas fa-bell me-2"></i>M'informer
+      </button>
+    </div>
+
+    <div class="maintenance-updates">
+      <h3>Dernières mises à jour</h3>
+      <div class="updates-list">
+        <div class="update-item" *ngFor="let update of updates">
+          <div class="update-time">{{ update.time }}</div>
+          <div class="update-message">{{ update.message }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="maintenance-contact">
+      <p>Questions ? Contactez notre support :</p>
+      <div class="contact-info">
+        <a href="mailto:support&#64;exemple.com">
+          <i class="fas fa-envelope me-2"></i>support&#64;exemple.com
+        </a>
+        <a href="tel:+33123456789">
+          <i class="fas fa-phone me-2"></i>+33 1 23 45 67 89
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

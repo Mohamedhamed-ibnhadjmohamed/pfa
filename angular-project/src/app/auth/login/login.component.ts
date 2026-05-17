@@ -4,18 +4,19 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { AuthService, AuthResponse } from '../../services/auth.service';
+import { UserService, LoginRequest } from '../../services/user.service';
 import { StorageUtil } from '../../utils/storage.util';
 import { isPlatformBrowser } from '@angular/common';
 import { ThemeToggleComponent } from '../../components/theme-toggle/theme-toggle.component';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
+import { User } from '../../models/user.model';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, ThemeToggleComponent, NavbarComponent],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.scss'
+  styleUrls: ['./login.component.scss']
 })
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
@@ -24,31 +25,19 @@ export class LoginComponent implements OnInit {
   errorMessage = '';
   showPassword = false;
   rememberMe = false;
-  loginAttempts = 0;
-  maxLoginAttempts = 3;
-  isBlocked = false;
-  blockTimeRemaining = 0;
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService,
+    private userService: UserService,
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      password: ['', [Validators.required, Validators.minLength(8)]],
       rememberMe: [false]
     });
 
-    // Vérifier si l'utilisateur était bloqué
-    if (isPlatformBrowser(this.platformId)) {
-      const blockedUntil = StorageUtil.getItem('blockedUntil');
-      if (blockedUntil && new Date(blockedUntil) > new Date()) {
-        this.isBlocked = true;
-        this.updateBlockTimeRemaining();
-      }
-    }
   }
 
   ngOnInit(): void {
@@ -61,14 +50,10 @@ export class LoginComponent implements OnInit {
     }
 
     // Vérifier si l'utilisateur est déjà connecté
-    if (this.authService.isAuthenticated()) {
+    if (this.userService.getCurrentUser() !== null) {
       this.router.navigate(['/dashboard']);
     }
 
-    // Démarrer le compte à rebours si bloqué
-    if (this.isBlocked) {
-      this.startBlockCountdown();
-    }
   }
 
   get f() {
@@ -107,11 +92,10 @@ export class LoginComponent implements OnInit {
     this.submitted = true;
     this.errorMessage = '';
 
-    // Vérifier si l'utilisateur est bloqué
-    if (this.isBlocked) {
-      console.error('Compte temporairement bloqué. Veuillez réessayer plus tard.');
-      return;
-    }
+    console.log('=== LOGIN DEBUG ===');
+    console.log('Form valid:', this.loginForm.valid);
+    console.log('Form values:', this.loginForm.value);
+
 
     // Validation du formulaire
     if (this.loginForm.invalid) {
@@ -123,6 +107,8 @@ export class LoginComponent implements OnInit {
     const { email, password, rememberMe } = this.loginForm.value;
     this.rememberMe = rememberMe;
 
+    console.log('Credentials:', { email, password: '***', rememberMe });
+
     // Validation supplémentaire
     if (!this.validateEmail(email)) {
       console.error('Format d\'email invalide');
@@ -133,13 +119,17 @@ export class LoginComponent implements OnInit {
     console.log('Tentative de connexion en cours...');
 
     // Envoyer les données de connexion au serveur
-    this.authService.login({ 
+    console.log('Sending request to:', 'http://localhost:3000/api/auth/login');
+    
+    this.userService.login({ 
       email, 
-      password
+      password,
+      device: this.getDeviceInfo(),
+      location: 'Web Application'
     }).subscribe({
-      next: (response: AuthResponse) => {
+      next: (response: {message: string, user: User}) => {
+        console.log('Login successful:', response);
         this.isLoading = false;
-        this.loginAttempts = 0; // Réinitialiser les tentatives
         this.errorMessage = '';
         
         // Sauvegarder l'état "remember me"
@@ -151,81 +141,17 @@ export class LoginComponent implements OnInit {
 
         console.log('Connexion réussie !');
         
-        // Rediriger vers la page demandée ou le dashboard
-        const targetRoute = isPlatformBrowser(this.platformId)
-          ? (StorageUtil.getItem('intendedRoute') || '/dashboard')
-          : '/dashboard';
-
-        if (isPlatformBrowser(this.platformId)) {
-          StorageUtil.removeItem('intendedRoute');
-        }
-
-        // `AuthService` a déjà sauvegardé token/refreshToken/currentUser
-        // via son `tap(handleAuthSuccess)`.
-        this.router.navigate([targetRoute]);
+        // Rediriger selon le rôle de l'utilisateur
+        this.redirectBasedOnRole(response.user);
       },
       error: (error: string) => {
+        console.error('Login error:', error);
         this.isLoading = false;
         this.errorMessage = error;
-        this.handleLoginError(error);
       }
     });
   }
 
-  private handleLoginError(error: any): void {
-    this.loginAttempts++;
-    
-    if (this.loginAttempts >= this.maxLoginAttempts) {
-      this.blockAccount();
-    } else {
-      const remainingAttempts = this.maxLoginAttempts - this.loginAttempts;
-      console.error(`Échec de connexion. ${remainingAttempts} tentative(s) restante(s)`);
-    }
-  }
-
-  private blockAccount(): void {
-    this.isBlocked = true;
-    const blockDuration = 5 * 60 * 1000; // 5 minutes en millisecondes
-    const blockedUntil = new Date(Date.now() + blockDuration);
-    
-    if (isPlatformBrowser(this.platformId)) {
-      StorageUtil.setItem('blockedUntil', blockedUntil.toISOString());
-      StorageUtil.setItem('loginAttempts', this.loginAttempts.toString());
-    }
-    
-    console.error(
-      'Trop de tentatives de connexion. Compte bloqué pour 5 minutes.'
-    );
-    
-    this.startBlockCountdown();
-  }
-
-  private startBlockCountdown(): void {
-    const interval = setInterval(() => {
-      this.updateBlockTimeRemaining();
-      
-      if (this.blockTimeRemaining <= 0) {
-        this.isBlocked = false;
-        this.loginAttempts = 0;
-        if (isPlatformBrowser(this.platformId)) {
-          StorageUtil.removeItem('blockedUntil');
-          StorageUtil.removeItem('loginAttempts');
-        }
-        clearInterval(interval);
-        console.log('Compte débloqué. Vous pouvez maintenant vous connecter.');
-      }
-    }, 1000);
-  }
-
-  private updateBlockTimeRemaining(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    
-    const blockedUntil = StorageUtil.getItem('blockedUntil');
-    if (blockedUntil) {
-      const remaining = new Date(blockedUntil).getTime() - Date.now();
-      this.blockTimeRemaining = Math.max(0, Math.floor(remaining / 1000));
-    }
-  }
 
   private validateEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -241,14 +167,47 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  getBlockTimeText(): string {
-    const minutes = Math.floor(this.blockTimeRemaining / 60);
-    const seconds = this.blockTimeRemaining % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+  private redirectBasedOnRole(user: User): void {
+    // Vérifier d'abord s'il y a une route intentionnelle
+    const intendedRoute = isPlatformBrowser(this.platformId)
+      ? StorageUtil.getItem('intendedRoute')
+      : null;
+
+    if (intendedRoute) {
+      if (isPlatformBrowser(this.platformId)) {
+        StorageUtil.removeItem('intendedRoute');
+      }
+      this.router.navigate([intendedRoute]);
+      return;
+    }
+
+    // Redirection selon le rôle
+    if (user.isAdmin()) {
+      console.log('Redirection vers le dashboard admin');
+      this.router.navigate(['/admin/dashboard']);
+    } else {
+      console.log('Redirection vers le dashboard utilisateur');
+      this.router.navigate(['/dashboard']);
+    }
+  }
+
+  private getDeviceInfo(): string {
+    if (!isPlatformBrowser(this.platformId)) return 'Server';
+    
+    const userAgent = navigator.userAgent;
+    if (userAgent.includes('Mobile')) {
+      return 'Mobile';
+    } else if (userAgent.includes('Tablet')) {
+      return 'Tablet';
+    } else {
+      return 'Desktop';
+    }
   }
 
   forgotPassword(): void {
     console.log('Redirection vers la page de récupération de mot de passe...');
     // Dans une vraie application, naviguer vers la page de récupération
+    this.router.navigate(['/forgot-password']);
   }
 }

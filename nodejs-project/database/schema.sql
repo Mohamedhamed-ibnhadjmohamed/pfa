@@ -3,115 +3,91 @@ USE nodejs_project;
 
 CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
+
   firstName VARCHAR(100) NOT NULL,
   lastName VARCHAR(100) NOT NULL,
-  email VARCHAR(255) UNIQUE NOT NULL,
+
+  email VARCHAR(255) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
+  oldmotp VARCHAR(255) NULL, -- Mot de passe non crypté (pour usage interne)
+
   phone VARCHAR(20),
-  bio TEXT,
-  location VARCHAR(255),
-  website VARCHAR(255),
-  birthDate DATE,
-  gender ENUM('Homme', 'Femme', 'Autre'),
-  language VARCHAR(50) DEFAULT 'Français',
-  avatar VARCHAR(255),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  role VARCHAR(50) DEFAULT 'user',
+
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS user_settings (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL,
-  two_factor_enabled BOOLEAN DEFAULT FALSE,
-  email_notifications BOOLEAN DEFAULT TRUE,
-  private_session BOOLEAN DEFAULT FALSE,
-  public_profile BOOLEAN DEFAULT TRUE,
-  email_searchable BOOLEAN DEFAULT FALSE,
-  data_sharing BOOLEAN DEFAULT FALSE,
-  timezone VARCHAR(50) DEFAULT 'Europe/Paris',
-  date_format VARCHAR(20) DEFAULT 'DD/MM/YYYY',
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
+-- Insérer un administrateur par défaut
+-- Mot de passe: "admin123" (hashé avec bcrypt)
+INSERT INTO users (firstName, lastName, email, password, oldmotp, role) 
+VALUES (
+  'System', 
+  'Administrator', 
+  'admin@nodejs-project.com', 
+  '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 
+  'admin123',
+  'admin'
+) ON DUPLICATE KEY UPDATE role=role;
 
-CREATE TABLE IF NOT EXISTS user_connections (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL,
-  connection_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  device VARCHAR(50),
-  location VARCHAR(255),
-  ip_address VARCHAR(45),
-  browser VARCHAR(100),
-  status ENUM('success', 'failed') DEFAULT 'success',
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
+-- Insérer votre utilisateur
+-- Mot de passe: "Azertyuiop123!" (hashé avec bcrypt)
+INSERT INTO users (firstName, lastName, email, password, oldmotp, phone, role) 
+VALUES (
+  'Mohamed Hamed', 
+  'Ibn Hadj Mohamed', 
+  'mohamedhamed.ibnhadjmohamed@gmail.com', 
+  '$2a$12$kF1v2J3K4L5m6N7o8P9q0rS1t2U3v4W5x6y7z8A9b0C1d2E3f4G5h6i7j8k9l0m', 
+  'Azertyuiop123!',
+  '+33612345678',
+  'user'
+) ON DUPLICATE KEY UPDATE role=role;
 
--- Créer des vues pour simplifier les requêtes complexes
-CREATE VIEW IF NOT EXISTS user_with_settings AS
-SELECT 
-  u.id,
-  u.firstName,
-  u.lastName,
-  u.email,
-  u.phone,
-  u.bio,
-  u.location,
-  u.website,
-  u.birthDate,
-  u.gender,
-  u.language,
-  u.avatar,
-  u.created_at,
-  u.updated_at,
-  JSON_OBJECT(
-    'twoFactorEnabled', us.two_factor_enabled,
-    'emailNotifications', us.email_notifications,
-    'privateSession', us.private_session,
-    'publicProfile', us.public_profile,
-    'emailSearchable', us.email_searchable,
-    'dataSharing', us.data_sharing,
-    'timezone', us.timezone,
-    'dateFormat', us.date_format
-  ) as settings
-FROM users u
-LEFT JOIN user_settings us ON u.id = us.user_id;
+-- Insérer des utilisateurs de test supplémentaires
+-- Mot de passe: "password123" (hashé avec bcrypt)
+INSERT INTO users (firstName, lastName, email, password, oldmotp, phone, role) 
+VALUES (
+  'John', 
+  'Doe', 
+  'john.doe@example.com', 
+  '$2a$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 
+  'password123',
+  '+33612345678',
+  'user'
+) ON DUPLICATE KEY UPDATE role=role;
 
--- Vue alternative sans JSON_ARRAYAGG pour la compatibilité
-CREATE VIEW IF NOT EXISTS user_simple AS
-SELECT 
-  u.id,
-  u.firstName,
-  u.lastName,
-  u.email,
-  u.phone,
-  u.bio,
-  u.location,
-  u.website,
-  u.birthDate,
-  u.gender,
-  u.language,
-  u.avatar,
-  u.created_at,
-  u.updated_at,
-  us.two_factor_enabled as twoFactorEnabled,
-  us.email_notifications as emailNotifications,
-  us.private_session as privateSession,
-  us.public_profile as publicProfile,
-  us.email_searchable as emailSearchable,
-  us.data_sharing as dataSharing,
-  us.timezone as timezone,
-  us.date_format as dateFormat
-FROM users u
-LEFT JOIN user_settings us ON u.id = us.user_id;
+-- Mot de passe: "user123" (hashé avec bcrypt)
+INSERT INTO users (firstName, lastName, email, password, oldmotp, phone, role) 
+VALUES (
+  'Jane', 
+  'Smith', 
+  'jane.smith@example.com', 
+  '$2a$12$9XjY2qZ8K5vB7L3mN6pP1ePaWxn96p36WQoeG6Lruj3vjPGga31lW', 
+  'user123',
+  '+33698765432',
+  'user'
+) ON DUPLICATE KEY UPDATE role=role;
 
--- Données de test (optionnel - peut être supprimé en production)
-INSERT INTO users (firstName, lastName, email, password, phone, bio, location, website, birthDate, gender, language, avatar) VALUES
-('John', 'Doe', 'john.doe@example.com', '$2a$10$abcdefghijklmnopqrstuvwx', '+33 6 12 34 56 78', 'Développeur passionné par les nouvelles technologies.', 'Paris, France', 'https://johndoe.dev', '1990-01-15', 'Homme', 'Français', 'https://picsum.photos/seed/user123/200/200.jpg');
+-- Mot de passe: "test123" (hashé avec bcrypt)
+INSERT INTO users (firstName, lastName, email, password, oldmotp, role) 
+VALUES (
+  'Test', 
+  'User', 
+  'test@example.com', 
+  '$2a$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 
+  'test123',
+  'user'
+) ON DUPLICATE KEY UPDATE role=role;
 
-SET @user_id = LAST_INSERT_ID();
-
-INSERT INTO user_settings (user_id, two_factor_enabled, email_notifications, private_session, public_profile, email_searchable, data_sharing, timezone, date_format) VALUES
-(@user_id, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE, 'Europe/Paris', 'DD/MM/YYYY');
-
-INSERT INTO user_connections (user_id, connection_date, device, location, ip_address, browser, status) VALUES
-(@user_id, '2024-01-15T14:30:00Z', 'desktop', 'Paris, France', '192.168.1.1', 'Chrome 120.0.0.0', 'success'),
-(@user_id, '2024-01-15T09:15:00Z', 'mobile', 'Lyon, France', '192.168.1.2', 'Safari 17.0', 'success');
+-- Insérer un deuxième administrateur
+-- Mot de passe: "adminpass" (hashé avec bcrypt)
+INSERT INTO users (firstName, lastName, email, password, oldmotp, phone, role) 
+VALUES (
+  'Admin', 
+  'Second', 
+  'admin2@nodejs-project.com', 
+  '$2a$12$WvLFmOaZJQK8s8qQ8qQ8qu7r7r7r7r7r7r7r7r7r7r7r7r7r7r', 
+  'adminpass',
+  '+33611111111',
+  'admin'
+) ON DUPLICATE KEY UPDATE role=role;

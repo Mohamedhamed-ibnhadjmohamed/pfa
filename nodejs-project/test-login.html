@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Connexion API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input[type="email"]:focus, input[type="password"]:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .loading {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin: 0;
+        }
+        .quick-test {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+        .quick-test button {
+            background-color: #28a745;
+            margin: 5px 0;
+        }
+        .quick-test button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Test de Connexion API</h1>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" value="mohamedhamed.ibnhadjmohamed@gmail.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Mot de passe:</label>
+                <input type="password" id="password" name="password" value="Azertyuiop123!" required>
+            </div>
+            
+            <button type="submit">🚀 Se Connecter</button>
+        </form>
+        
+        <div id="result" class="result"></div>
+        
+        <div class="quick-test">
+            <h3>🧪 Tests Rapides</h3>
+            <button onclick="testAdmin()">Tester Admin</button>
+            <button onclick="testUser()">Tester Votre Compte</button>
+            <button onclick="testWrong()">Tester Mauvais MDP</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            await login(email, password);
+        });
+        
+        async function login(email, password) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result loading';
+            resultDiv.innerHTML = '<pre>🔄 Connexion en cours...</pre>';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <pre>✅ Connexion réussie!
+
+📧 Email: ${data.user?.email || email}
+👤 Nom: ${data.user?.firstName} ${data.user?.lastName}
+🔐 Rôle: ${data.user?.role}
+🎫 Token: ${data.token ? 'Généré avec succès' : 'Manquant'}
+🔄 Refresh Token: ${data.refreshToken ? 'Généré avec succès' : 'Manquant'}
+
+📦 Réponse complète:
+${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <pre>❌ Connexion échouée!
+
+📧 Email: ${email}
+🔑 Password: [MASQUÉ]
+🚫 Erreur: ${data.message || 'Erreur inconnue'}
+📊 Status: ${response.status}
+
+📦 Réponse complète:
+${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <pre>❌ Erreur de connexion!
+
+🌐 URL: http://localhost:3000/api/auth/login
+🚫 Erreur: ${error.message}
+
+💡 Solutions possibles:
+1. Vérifiez que le serveur est démarré (npm run dev)
+2. Vérifiez l'URL du serveur
+3. Vérifiez les identifiants</pre>
+                `;
+            }
+        }
+        
+        // Tests rapides
+        function testAdmin() {
+            document.getElementById('email').value = 'admin@nodejs-project.com';
+            document.getElementById('password').value = 'admin123';
+            document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+        }
+        
+        function testUser() {
+            document.getElementById('email').value = 'mohamedhamed.ibnhadjmohamed@gmail.com';
+            document.getElementById('password').value = 'Azertyuiop123!';
+            document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+        }
+        
+        function testWrong() {
+            document.getElementById('email').value = 'mohamedhamed.ibnhadjmohamed@gmail.com';
+            document.getElementById('password').value = 'wrongpassword';
+            document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+        }
+    </script>
+</body>
+</html>

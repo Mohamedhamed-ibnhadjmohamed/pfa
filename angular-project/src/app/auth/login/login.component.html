@@ -18,15 +18,21 @@
                 class="form-control" 
                 id="email" 
                 formControlName="email"
-                [ngClass]="{ 'is-invalid': submitted && f['email'].errors }"
+                [ngClass]="{ 
+                  'is-invalid': (submitted || f['email'].touched) && f['email'].errors,
+                  'is-valid': (submitted || f['email'].touched) && f['email'].valid
+                }"
                 placeholder="Entrez votre email">
-              <div *ngIf="submitted && f['email'].errors" class="invalid-feedback">
+              <div *ngIf="(submitted || f['email'].touched) && f['email'].errors" class="invalid-feedback">
                 <div *ngIf="f['email'].errors['required']">
                   <i class="fas fa-exclamation-circle me-1"></i>L'email est requis
                 </div>
                 <div *ngIf="f['email'].errors['email']">
                   <i class="fas fa-exclamation-circle me-1"></i>Veuillez entrer un email valide
                 </div>
+              </div>
+              <div *ngIf="(submitted || f['email'].touched) && f['email'].valid" class="valid-feedback">
+                <i class="fas fa-check-circle me-1"></i>Email valide
               </div>
             </div>
             <div class="mb-3">
@@ -39,7 +45,10 @@
                   class="form-control" 
                   id="password" 
                   formControlName="password"
-                  [ngClass]="{ 'is-invalid': submitted && f['password'].errors }"
+                  [ngClass]="{ 
+                    'is-invalid': (submitted || f['password'].touched) && f['password'].errors,
+                    'is-valid': (submitted || f['password'].touched) && f['password'].valid
+                  }"
                   placeholder="Entrez votre mot de passe">
                 <button 
                   type="button" 
@@ -49,13 +58,16 @@
                   <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
                 </button>
               </div>
-              <div *ngIf="submitted && f['password'].errors" class="invalid-feedback">
+              <div *ngIf="(submitted || f['password'].touched) && f['password'].errors" class="invalid-feedback">
                 <div *ngIf="f['password'].errors['required']">
                   <i class="fas fa-exclamation-circle me-1"></i>Le mot de passe est requis
                 </div>
                 <div *ngIf="f['password'].errors['minlength']">
-                  <i class="fas fa-exclamation-circle me-1"></i>Le mot de passe doit contenir au moins 6 caractères
+                  <i class="fas fa-exclamation-circle me-1"></i>Le mot de passe doit contenir au moins 8 caractères
                 </div>
+              </div>
+              <div *ngIf="(submitted || f['password'].touched) && f['password'].valid" class="valid-feedback">
+                <i class="fas fa-check-circle me-1"></i>Mot de passe valide
               </div>
             </div>
             

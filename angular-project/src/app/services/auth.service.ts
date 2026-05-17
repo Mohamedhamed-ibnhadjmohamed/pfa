@@ -1,24 +1,21 @@
 import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, throwError, of } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
 
 import { User } from '../models/user.model';
 import { StorageUtil } from '../utils/storage.util';
 
-/* =======================
-   Interfaces
-======================= */
-
-export interface LoginRequest {
+// Interface definitions for method signatures
+interface LoginRequest {
   email: string;
   password: string;
   device?: string;
   location?: string;
 }
 
-export interface RegisterRequest {
+interface RegisterRequest {
   firstName: string;
   lastName: string;
   email: string;
@@ -26,11 +23,10 @@ export interface RegisterRequest {
   phone?: string;
 }
 
-export interface AuthResponse {
+interface AuthResponse {
   message: string;
   user: User;
   token: string;
-  refreshToken: string;
 }
 
 /* =======================
@@ -44,7 +40,6 @@ export class AuthService {
 
   private readonly API_URL = 'http://localhost:3000/api/auth';
   private readonly TOKEN_KEY = 'auth_token';
-  private readonly REFRESH_TOKEN_KEY = 'refresh_token';
 
   private currentUser: User | null = null;
 
@@ -81,30 +76,6 @@ export class AuthService {
      Token
   ======================= */
 
-  refreshToken(): Observable<{ message: string; token: string }> {
-    const token = this.getRefreshToken();
-
-    if (!token) {
-      this.logout();
-      return throwError(() => 'Refresh token manquant');
-    }
-
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`
-    });
-
-    return this.http.post<{ message: string; token: string }>(
-      `${this.API_URL}/refresh`,
-      {},
-      { headers }
-    ).pipe(
-      tap(res => this.setToken(res.token)),
-      catchError(err => {
-        this.logout();
-        return throwError(() => 'Session expirée');
-      })
-    );
-  }
 
   /* =======================
      Utils
@@ -123,7 +94,7 @@ export class AuthService {
   }
 
   getRefreshToken(): string | null {
-    return StorageUtil.getItem(this.REFRESH_TOKEN_KEY);
+    return null;
   }
 
   getAuthHeaders(): HttpHeaders {
@@ -138,7 +109,6 @@ export class AuthService {
 
   private handleAuthSuccess(res: AuthResponse): void {
     this.setToken(res.token);
-    this.setRefreshToken(res.refreshToken);
     this.currentUser = res.user;
     StorageUtil.setItem('currentUser', JSON.stringify(res.user));
   }
@@ -147,13 +117,9 @@ export class AuthService {
     StorageUtil.setItem(this.TOKEN_KEY, token);
   }
 
-  private setRefreshToken(token: string): void {
-    StorageUtil.setItem(this.REFRESH_TOKEN_KEY, token);
-  }
 
   private clearSession(): void {
     StorageUtil.removeItem(this.TOKEN_KEY);
-    StorageUtil.removeItem(this.REFRESH_TOKEN_KEY);
     StorageUtil.removeItem('currentUser');
     this.currentUser = null;
   }

@@ -67,9 +67,20 @@ export class AuthGuard implements CanActivate {
 
   private isTokenExpired(token: string): boolean {
     try {
-      // Dans une vraie application, décoder le JWT token
-      // Pour la démo, on simule une expiration
-      const tokenData = JSON.parse(atob(token.split('.')[1]));
+      // Check if it's a mock token (starts with 'mock-jwt-token')
+      if (token.startsWith('mock-jwt-token')) {
+        // Mock tokens don't expire for demo purposes
+        return false;
+      }
+      
+      // For real JWT tokens, decode and check expiration
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        console.warn('Token format invalid');
+        return true; // Invalid format, consider as expired
+      }
+      
+      const tokenData = JSON.parse(atob(parts[1]));
       const expirationTime = tokenData.exp * 1000; // Convertir en milliseconds
       return Date.now() >= expirationTime;
     } catch (error) {

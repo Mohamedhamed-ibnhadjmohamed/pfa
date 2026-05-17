@@ -1,0 +1,125 @@
+<div class="dashboard-home">
+  <div class="page-header">
+    <div class="container">
+      <div class="row">
+        <div class="col">
+          <h1 class="h3">Tableau de bord</h1>
+          <p class="text-muted">Bienvenue sur votre espace personnel</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-primary">
+          <i class="fas fa-user"></i>
+        </div>
+        <div class="stat-content">
+          <h3>Profil</h3>
+          <p>Complété à {{ stats?.profileCompletion || 0 }}%</p>
+          <div class="progress">
+            <div class="progress-bar bg-primary" [style.width.%]="stats?.profileCompletion || 0"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-success">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+        <div class="stat-content">
+          <h3>Sécurité</h3>
+          <p>{{ stats?.securityStatus || 'Non défini' }}</p>
+          <small [class]="stats?.securityClass || 'text-muted'">
+            <i [class]="stats?.securityIcon || 'fas fa-question'"></i> {{ stats?.securityText || 'Non défini' }}
+          </small>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-info">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-content">
+          <h3>Connexions</h3>
+          <p>{{ stats?.monthlyConnections || 0 }} ce mois</p>
+          <small class="text-muted">Dernière: {{ stats?.lastConnection || 'Aujourd\'hui' }}</small>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-info">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="stat-content">
+          <h3>Activité</h3>
+          <p>{{ activities.length }} récentes</p>
+          <small class="text-info">📊 Vue d'ensemble</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <div class="action-card">
+        <h4><i class="fas fa-user-edit me-2"></i>Actions rapides</h4>
+        <div class="action-buttons">
+          <a routerLink="/dashboard/profile" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-user me-1"></i>Modifier profil
+          </a>
+          <a routerLink="/dashboard/settings" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-cog me-1"></i>Paramètres
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+      <div class="info-card">
+        <h4><i class="fas fa-info-circle me-2"></i>Informations</h4>
+        <ul class="info-list">
+          <li><strong>Email:</strong> {{ currentUser?.email || 'Non défini' }}</li>
+          <li><strong>Membre depuis:</strong> {{ stats?.memberSince || 'Non défini' }}</li>
+          <li><strong>Dernière connexion:</strong> {{ stats?.lastLogin || 'Non défini' }}</li>
+          <li><strong>Statut:</strong> <span class="badge bg-success">Actif</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="row">
+    <div class="col-12 mb-4">
+      <div class="activity-card">
+        <h4><i class="fas fa-history me-2"></i>Activité récente</h4>
+        <div class="activity-list">
+          <div class="activity-item" *ngFor="let activity of activities; trackBy: trackById">
+            <div class="activity-icon" [class]="activity.type">
+              <i [class]="activity.icon"></i>
+            </div>
+            <div class="activity-content">
+              <h6>{{ activity.title }}</h6>
+              <p>{{ activity.description }}</p>
+              <small class="text-muted">{{ activity.time }}</small>
+            </div>
+          </div>
+          <div class="text-center p-3" *ngIf="activities.length === 0">
+            <i class="fas fa-history fa-2x text-muted mb-2"></i>
+            <p class="text-muted">Aucune activité récente</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

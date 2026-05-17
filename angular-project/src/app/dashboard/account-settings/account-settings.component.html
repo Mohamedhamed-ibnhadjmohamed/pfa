@@ -1,0 +1,84 @@
+<div class="account-settings">
+  <div class="page-header">
+    <div class="container">
+      <div class="row">
+        <div class="col">
+          <h1 class="h3">Paramètres du Compte</h1>
+          <p class="text-muted">Gérez vos préférences et sécurité</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 mx-auto">
+        <div class="settings-card">
+          <div class="card-header">
+            <h4 class="mb-0">
+              <i class="fas fa-cog me-2"></i>Paramètres généraux
+            </h4>
+          </div>
+          <div class="card-body">
+            <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="language" class="form-label">Langue</label>
+                  <select class="form-select" id="language" formControlName="language">
+                    <option value="fr">Français</option>
+                    <option value="en">English</option>
+                    <option value="ar">العربية</option>
+                  </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="timezone" class="form-label">Fuseau horaire</label>
+                  <select class="form-select" id="timezone" formControlName="timezone">
+                    <option value="Europe/Paris">Paris (GMT+1)</option>
+                    <option value="Africa/Tunis">Tunis (GMT+1)</option>
+                    <option value="UTC">UTC</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-12 mb-3">
+                  <label for="theme" class="form-label">Thème</label>
+                  <div class="theme-options">
+                    <label class="theme-option">
+                      <input type="radio" name="theme" value="light" formControlName="theme">
+                      <span class="theme-preview light-theme"></span>
+                      <span>Clair</span>
+                    </label>
+                    <label class="theme-option">
+                      <input type="radio" name="theme" value="dark" formControlName="theme">
+                      <span class="theme-preview dark-theme"></span>
+                      <span>Sombre</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="twoFactor" formControlName="twoFactorAuth">
+                    <label class="form-check-label" for="twoFactor">
+                      Authentification à deux facteurs
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary" [disabled]="settingsForm.invalid || isLoading">
+                  <i class="fas fa-save me-2"></i>
+                  {{ isLoading ? 'Enregistrement...' : 'Sauvegarder' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

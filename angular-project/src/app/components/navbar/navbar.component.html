@@ -1,0 +1,76 @@
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary" [class.scrolled]="isScrolled">
+      <div class="container">
+        <a class="navbar-brand" routerLink="/">
+          <i class="fas fa-rocket me-2 brand-icon"></i>
+          <span class="logo-text">MHBM</span>
+        </a>
+        
+        <button 
+          class="navbar-toggler" 
+          type="button" 
+          (click)="toggleMobileMenu()"
+          [attr.aria-expanded]="isMobileMenuOpen"
+          aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon" [class.active]="isMobileMenuOpen"></span>
+        </button>
+        
+        <div class="navbar-collapse" [class.show]="isMobileMenuOpen">
+          <!-- Navigation principale -->
+          <ul class="navbar-nav mx-auto">
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/" routerLinkActive="active">
+                <i class="fas fa-home me-1"></i>Accueil
+              </a>
+            </li>
+
+          </ul>
+          
+          <!-- Section utilisateur -->
+          <ul class="navbar-nav">
+            <!-- Utilisateur non connecté -->
+            <ng-container *ngIf="!currentUser">
+              <li class="nav-item">
+                <a class="nav-link" routerLink="/login" routerLinkActive="active">
+                  <i class="fas fa-sign-in-alt me-1"></i>Connexion
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link btn-nav-signup" routerLink="/register" routerLinkActive="active">
+                  <i class="fas fa-user-plus me-1"></i>Inscription
+                </a>
+              </li>
+            </ng-container>
+            
+            <!-- Utilisateur connecté -->
+            <ng-container *ngIf="currentUser">
+              <!-- Menu utilisateur -->
+              <li class="nav-item dropdown user-dropdown">
+                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" (click)="toggleUserMenu($event)">
+                  <i class="fas fa-user user-avatar"></i>
+                  <span class="user-name ms-2 d-none d-lg-inline">{{ currentUser.firstName }} {{ currentUser.lastName }}</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end" [class.show]="showUserMenu">
+                  <div class="dropdown-header">
+                    <div class="user-info">
+                      <strong>{{ currentUser.firstName }} {{ currentUser.lastName }}</strong>
+                      <small class="text-muted d-block">{{ currentUser.email }}</small>
+                    </div>
+                  </div>
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item" routerLink="/dashboard">
+                    <i class="fas fa-tachometer-alt me-2"></i>Tableau de bord
+                  </a>
+                  <a class="dropdown-item" routerLink="/dashboard/settings">
+                    <i class="fas fa-cog me-2"></i>Paramètres
+                  </a>
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item text-danger" href="#" (click)="logout($event)">
+                    <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
+                  </a>
+                </div>
+              </li>
+            </ng-container>
+          </ul>
+        </div>
+      </div>
+    </nav>

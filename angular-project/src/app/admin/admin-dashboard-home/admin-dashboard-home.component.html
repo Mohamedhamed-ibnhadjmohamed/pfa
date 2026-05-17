@@ -1,0 +1,165 @@
+<div class="admin-dashboard-home">
+  <div class="page-header">
+    <div class="container">
+      <div class="row">
+        <div class="col">
+          <h1 class="h3">Tableau de bord Administrateur</h1>
+          <p class="text-muted">Gestion et surveillance du système</p>
+        </div>
+        <div class="col-auto">
+          <button class="btn btn-outline-primary btn-sm" (click)="refreshStats()" [disabled]="isLoading">
+            <i class="fas fa-sync-alt me-1" [class.fa-spin]="isLoading"></i>
+            Actualiser
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Stats Cards -->
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+      <div class="stat-card admin-card">
+        <div class="stat-icon bg-primary">
+          <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ adminStats?.totalUsers || 0 }}</h3>
+          <p>Total utilisateurs</p>
+          <small class="text-success">
+            <i class="fas fa-arrow-up"></i> +{{ adminStats?.newUsersThisMonth || 0 }} ce mois
+          </small>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+      <div class="stat-card admin-card">
+        <div class="stat-icon bg-success">
+          <i class="fas fa-user-check"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ adminStats?.activeUsers || 0 }}</h3>
+          <p>Utilisateurs actifs</p>
+          <small class="text-muted">
+            {{ getActiveUserPercentage() }}% du total
+          </small>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+      <div class="stat-card admin-card">
+        <div class="stat-icon bg-info">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ adminStats?.totalConnections || 0 }}</h3>
+          <p>Connexions totales</p>
+          <small class="text-info">Ce mois</small>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+      <div class="stat-card admin-card">
+        <div class="stat-icon" [class]="getSystemHealthClass(adminStats?.systemHealth)">
+          <i class="fas fa-heartbeat"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ getSystemHealthText(adminStats?.systemHealth) }}</h3>
+          <p>Santé système</p>
+          <small [class]="getSystemHealthTextClass(adminStats?.systemHealth)">
+            {{ getSystemHealthDescription(adminStats?.systemHealth) }}
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Storage and Backup Info -->
+  <div class="row mb-4">
+    <div class="col-md-6 mb-3">
+      <div class="info-card admin-card">
+        <h4><i class="fas fa-database me-2"></i>Stockage</h4>
+        <div class="storage-info">
+          <div class="storage-bar">
+            <div class="progress">
+              <div class="progress-bar" 
+                   [class.bg-success]="adminStats?.storageUsed! < 70"
+                   [class.bg-warning]="adminStats?.storageUsed! >= 70 && adminStats?.storageUsed! < 90"
+                   [class.bg-danger]="adminStats?.storageUsed! >= 90"
+                   [style.width.%]="adminStats?.storageUsed || 0">
+              </div>
+            </div>
+          </div>
+          <div class="storage-text">
+            <span>{{ adminStats?.storageUsed || 0 }} GB utilisés</span>
+            <span class="text-muted">sur {{ adminStats?.storageTotal || 0 }} GB</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-6 mb-3">
+      <div class="info-card admin-card">
+        <h4><i class="fas fa-shield-alt me-2"></i>Sauvegarde</h4>
+        <div class="backup-info">
+          <p><strong>Dernière sauvegarde:</strong> {{ adminStats?.lastBackup || 'Inconnue' }}</p>
+          <div class="backup-status">
+            <span class="badge bg-success">Automatique</span>
+            <span class="text-muted ms-2">Quotidienne</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="action-card admin-card">
+        <h4><i class="fas fa-tools me-2"></i>Actions rapides</h4>
+        <div class="action-buttons">
+          <a routerLink="/admin/users" class="btn btn-primary btn-sm me-2">
+            <i class="fas fa-users me-1"></i>Gérer les utilisateurs
+          </a>
+          <a routerLink="/admin/settings" class="btn btn-outline-secondary btn-sm me-2">
+            <i class="fas fa-cog me-1"></i>Paramètres système
+          </a>
+          <a routerLink="/admin/logs" class="btn btn-outline-info btn-sm me-2">
+            <i class="fas fa-file-alt me-1"></i>Journaux système
+          </a>
+          <button class="btn btn-outline-warning btn-sm">
+            <i class="fas fa-download me-1"></i>Exporter les données
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Admin Activity -->
+  <div class="row">
+    <div class="col-12">
+      <div class="activity-card admin-card">
+        <h4><i class="fas fa-history me-2"></i>Activité système récente</h4>
+        <div class="activity-list">
+          <div class="activity-item" *ngFor="let activity of adminStats?.recentActivities; trackBy: trackById">
+            <div class="activity-icon" [class]="activity.type" [class.severity-high]="activity.severity === 'high'" [class.severity-medium]="activity.severity === 'medium'" [class.severity-low]="activity.severity === 'low'">
+              <i [class]="activity.icon"></i>
+            </div>
+            <div class="activity-content">
+              <h6>{{ activity.title }}</h6>
+              <p>{{ activity.description }}</p>
+              <small class="text-muted">{{ activity.time }}</small>
+            </div>
+          </div>
+          <div class="text-center p-3" *ngIf="!adminStats?.recentActivities || (adminStats?.recentActivities?.length ?? 0) === 0">
+            <i class="fas fa-history fa-2x text-muted mb-2"></i>
+            <p class="text-muted">Aucune activité récente</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

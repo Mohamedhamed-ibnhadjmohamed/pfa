@@ -1,163 +1,167 @@
 .user-profile {
-  max-width: 1200px;
-  margin: 0 auto;
+  min-height: 100vh;
+  background: #f8f9fa;
 }
 
+// Header Styles
 .page-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 2rem 0;
   margin-bottom: 2rem;
 }
 
 .page-header h1 {
-  color: var(--text-primary);
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.avatar-section {
-  background: var(--bg-card);
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 4px 15px var(--shadow-light);
-  border: 1px solid var(--border-color);
-  text-align: center;
-}
-
-.avatar-container {
-  position: relative;
-  display: inline-block;
-  margin-bottom: 1rem;
-}
-
-.avatar-large {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 4px solid #667eea;
-  box-shadow: 0 4px 15px var(--shadow-light);
-}
-
-.avatar-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  border-radius: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  cursor: pointer;
-}
-
-.avatar-container:hover .avatar-overlay {
-  opacity: 1;
-}
-
-.avatar-upload-btn {
   color: white;
-  text-align: center;
-  cursor: pointer;
+  font-weight: 600;
   margin: 0;
 }
 
-.avatar-upload-btn i {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
+.page-header p {
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
 }
 
-.avatar-upload-btn span {
-  font-size: 0.8rem;
-  font-weight: 500;
+// Profile Card
+.profile-card {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 2rem;
 }
 
-.avatar-info h5 {
-  color: var(--text-primary);
-  margin-bottom: 0.5rem;
+.card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1.5rem;
+  border: none;
+}
+
+.card-header h4 {
+  color: white;
   font-weight: 600;
+  margin: 0;
 }
 
-.avatar-info p {
-  color: var(--text-secondary);
-  margin-bottom: 0.5rem;
-}
-
-.profile-form {
-  background: var(--bg-card);
-  border-radius: 12px;
+.card-body {
   padding: 2rem;
-  box-shadow: 0 4px 15px var(--shadow-light);
-  border: 1px solid var(--border-color);
-}
-
-.profile-form h4 {
-  color: var(--text-primary);
-  margin-bottom: 1.5rem;
-  font-weight: 600;
 }
 
 .form-label {
-  color: var(--text-primary);
-  font-weight: 500;
+  font-weight: 600;
+  color: #555;
   margin-bottom: 0.5rem;
 }
 
 .form-control {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  transition: all 0.3s ease;
 }
 
 .form-control:focus {
-  background: var(--bg-secondary);
   border-color: #667eea;
   box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+  outline: none;
 }
 
-.additional-info {
-  background: var(--bg-card);
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 4px 15px var(--shadow-light);
-  border: 1px solid var(--border-color);
+.form-control[readonly] {
+  background: #f8f9fa;
+  color: #6c757d;
 }
 
-.additional-info h4 {
-  color: var(--text-primary);
-  margin-bottom: 1.5rem;
-  font-weight: 600;
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
 }
 
-.info-item {
-  margin-bottom: 1rem;
-  padding: 0.75rem;
-  background: var(--bg-secondary);
+.btn {
+  padding: 0.75rem 2rem;
   border-radius: 8px;
-  border: 1px solid var(--border-color);
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: none;
 }
 
-.info-item strong {
-  color: var(--text-primary);
-  display: block;
-  margin-bottom: 0.25rem;
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
 }
 
-.info-item span {
-  color: var(--text-secondary);
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
 }
 
-// Responsive
+.btn-primary:disabled {
+  opacity: 0.7;
+  transform: none;
+  cursor: not-allowed;
+}
+
+.btn-outline-primary {
+  background: transparent;
+  color: #667eea;
+  border: 2px solid #667eea;
+}
+
+.btn-outline-primary:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: #6c757d;
+  border: 2px solid #6c757d;
+}
+
+.btn-secondary:hover {
+  background: #6c757d;
+  color: white;
+  transform: translateY(-2px);
+}
+
+// Responsive Design
 @media (max-width: 768px) {
-  .avatar-section {
-    margin-bottom: 2rem;
+  .page-header {
+    padding: 1.5rem 0;
   }
   
-  .avatar-large {
-    width: 120px;
-    height: 120px;
+  .profile-card {
+    margin-bottom: 1.5rem;
+  }
+  
+  .card-body {
+    padding: 1.5rem;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .btn {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .page-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .form-control {
+    padding: 0.5rem 0.75rem;
   }
 }

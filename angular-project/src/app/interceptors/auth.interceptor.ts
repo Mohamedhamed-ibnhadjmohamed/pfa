@@ -1,9 +1,9 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpInterceptorFn, HttpEvent, HttpHandlerFn, HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
-import { catchError, switchMap, throwError } from 'rxjs';
+import { catchError, switchMap, throwError, Observable } from 'rxjs';
 
-export const authInterceptor: HttpInterceptorFn = (req, next) => {
+export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> => {
   const authService = inject(AuthService);
 
   // Ne pas ajouter le token pour les requêtes d'authentification
@@ -20,21 +20,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     catchError(error => {
       // Gérer les erreurs 401 (token expiré)
       if (error.status === 401) {
-        // Tenter de rafraîchir le token
-        return authService.refreshToken().pipe(
-          switchMap(() => {
-            // Retenter la requête originale avec le nouveau token
-            const newAuthReq = req.clone({
-              headers: req.headers.set('Authorization', `Bearer ${authService.getToken()}`)
-            });
-            return next(newAuthReq);
-          }),
-          catchError(refreshError => {
-            // Si le refresh échoue, déconnecter l'utilisateur
-            authService.logout();
-            return throwError(() => refreshError);
-          })
-        );
+      // Tenter de rafraîchir le token
+      // Note: refreshToken method doesn't exist, just logout for now
+      authService.logout();
+      return throwError(() => error);
       }
       return throwError(() => error);
     })

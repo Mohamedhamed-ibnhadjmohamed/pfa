@@ -1,0 +1,195 @@
+<div class="contact-page">
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 mx-auto text-center">
+          <h1 class="display-4 fw-bold mb-4">Contactez-Nous</h1>
+          <p class="lead">
+            Une question ? Une suggestion ? Notre équipe est là pour vous aider.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Form Section -->
+  <section class="contact-form py-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 mx-auto">
+          <div class="form-container">
+            <h2 class="text-center mb-4">Envoyez-nous un message</h2>
+            
+            <!-- Success Message -->
+            <div class="alert alert-success" *ngIf="successMessage">
+              <i class="fas fa-check-circle me-2"></i>{{ successMessage }}
+            </div>
+            
+            <!-- Error Message -->
+            <div class="alert alert-danger" *ngIf="errorMessage">
+              <i class="fas fa-exclamation-circle me-2"></i>{{ errorMessage }}
+            </div>
+
+            <form [formGroup]="contactForm" (ngSubmit)="onSubmit()">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="firstName" class="form-label">Prénom *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="firstName"
+                    formControlName="firstName"
+                    [class.is-invalid]="submitted && f['firstName'].errors"
+                  >
+                  <div class="invalid-feedback" *ngIf="submitted && f['firstName'].errors">
+                    <div *ngIf="f['firstName'].errors['required']">Le prénom est requis</div>
+                    <div *ngIf="f['firstName'].errors['minlength']">Minimum 2 caractères</div>
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="lastName" class="form-label">Nom *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="lastName"
+                    formControlName="lastName"
+                    [class.is-invalid]="submitted && f['lastName'].errors"
+                  >
+                  <div class="invalid-feedback" *ngIf="submitted && f['lastName'].errors">
+                    <div *ngIf="f['lastName'].errors['required']">Le nom est requis</div>
+                    <div *ngIf="f['lastName'].errors['minlength']">Minimum 2 caractères</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="email" class="form-label">Email *</label>
+                <input 
+                  type="email" 
+                  class="form-control" 
+                  id="email"
+                  formControlName="email"
+                  [class.is-invalid]="submitted && f['email'].errors"
+                >
+                <div class="invalid-feedback" *ngIf="submitted && f['email'].errors">
+                  <div *ngIf="f['email'].errors['required']">L'email est requis</div>
+                  <div *ngIf="f['email'].errors['email']">Format d'email invalide</div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="subject" class="form-label">Sujet *</label>
+                <select 
+                  class="form-control" 
+                  id="subject"
+                  formControlName="subject"
+                  [class.is-invalid]="submitted && f['subject'].errors"
+                >
+                  <option value="">Choisissez un sujet</option>
+                  <option value="support">Support technique</option>
+                  <option value="partnership">Partenariat</option>
+                  <option value="feedback">Retour d'expérience</option>
+                  <option value="other">Autre</option>
+                </select>
+                <div class="invalid-feedback" *ngIf="submitted && f['subject'].errors">
+                  <div *ngIf="f['subject'].errors['required']">Le sujet est requis</div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="message" class="form-label">Message *</label>
+                <textarea 
+                  class="form-control" 
+                  id="message"
+                  rows="5"
+                  formControlName="message"
+                  [class.is-invalid]="submitted && f['message'].errors"
+                  placeholder="Décrivez votre demande en détail..."
+                ></textarea>
+                <div class="invalid-feedback" *ngIf="submitted && f['message'].errors">
+                  <div *ngIf="f['message'].errors['required']">Le message est requis</div>
+                  <div *ngIf="f['message'].errors['minlength']">Minimum 10 caractères</div>
+                </div>
+              </div>
+
+              <div class="text-center">
+                <button 
+                  type="submit" 
+                  class="btn btn-primary btn-lg"
+                  [disabled]="isLoading"
+                >
+                  <i class="fas fa-paper-plane me-2" *ngIf="!isLoading"></i>
+                  <i class="fas fa-spinner fa-spin me-2" *ngIf="isLoading"></i>
+                  {{ isLoading ? 'Envoi en cours...' : 'Envoyer le message' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Info Section -->
+  <section class="contact-info py-5 bg-light">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <div class="info-card text-center p-4">
+            <div class="info-icon mb-3">
+              <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <h4>Adresse</h4>
+            <p>123 Avenue de l'Innovation<br>Tunis, Tunisie<br>1000</p>
+          </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <div class="info-card text-center p-4">
+            <div class="info-icon mb-3">
+              <i class="fas fa-phone"></i>
+            </div>
+            <h4>Téléphone</h4>
+            <p>+216 70 000 000<br>+216 71 111 111</p>
+          </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <div class="info-card text-center p-4">
+            <div class="info-icon mb-3">
+              <i class="fas fa-envelope"></i>
+            </div>
+            <h4>Email</h4>
+            <p>contact&#64;mhbm.com<br>support&#64;mhbm.com</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Social Section -->
+  <section class="social py-5">
+    <div class="container text-center">
+      <h2 class="display-5 fw-bold mb-4">Suivez-nous</h2>
+      <p class="lead text-muted mb-4">
+        Restez connecté avec notre communauté et nos dernières actualités
+      </p>
+      <div class="social-links">
+        <a href="#" class="social-link facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+        <a href="#" class="social-link twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+        <a href="#" class="social-link linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+        <a href="#" class="social-link instagram">
+          <i class="fab fa-instagram"></i>
+        </a>
+        <a href="#" class="social-link github">
+          <i class="fab fa-github"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+</div>
